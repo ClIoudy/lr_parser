@@ -1,0 +1,27 @@
+use crate::tokens::Token;
+
+#[derive(Debug, Clone)]
+pub struct Ast {
+    pub value: Token,
+    pub children: Vec<Ast>,
+}
+
+impl Ast {
+    pub fn new(value: Token) -> Self {
+        Self {
+            value,
+            children: Vec::new(),
+        }
+    }
+
+    pub fn with_children(value: Token, children: Vec<Ast>) -> Self {
+        Self {
+            value,
+            children,
+        }
+    }
+
+    pub fn add_child(&mut self, child: Ast) {
+        self.children.push(child);
+    }
+}
