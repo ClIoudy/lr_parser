@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::{Debug, Display}};
 
-use crate::tokens::Token;
+use crate::{tokens::Token, TokenIdent};
 
 #[derive(Clone)]
 pub struct ParseError {
@@ -14,7 +14,7 @@ impl ParseError {
         }
     }
     
-    pub fn expected(expected: &Vec<Token>, actual: &Token) -> Self {
+    pub fn expected(expected: &Vec<TokenIdent>, actual: &Token) -> Self {
         Self {
             message: format!("expected one of: {:?}, found: {:?}", expected, actual)
         }

@@ -19,7 +19,7 @@ impl Token {
     pub fn eof() -> Self {
         Self {
             value: String::new(),
-            label: None,
+            label: Some("$".to_string()),
             is_eof: true,
         }
     }
@@ -49,5 +49,11 @@ impl Debug for Token {
         }
 
         Ok(())
+    }
+}
+
+impl PartialEq<&str> for Token {
+    fn eq(&self, other: &&str) -> bool {
+        self.value == other.to_string()
     }
 }

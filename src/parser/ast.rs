@@ -24,4 +24,12 @@ impl Ast {
     pub fn add_child(&mut self, child: Ast) {
         self.children.push(child);
     }
+
+    pub fn pop_checked(&mut self) -> Option<Ast> {
+        self.children.pop()
+    }
+
+    pub fn pop(&mut self) -> Ast {
+        self.children.pop().unwrap()
+    }
 }

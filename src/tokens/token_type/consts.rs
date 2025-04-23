@@ -2,7 +2,7 @@ use super::TokenType;
 
 impl TokenType {
     pub fn numbers() -> Self {
-        Self::new("[0-9]+")
+        Self::labeld("[0-9]+", "numbers")
     }
 
     pub fn lowercase() -> Self {

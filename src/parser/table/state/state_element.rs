@@ -3,6 +3,7 @@ use std::fmt::Debug;
 use crate::Token;
 
 use crate::Rule;
+use crate::TokenIdent;
 
 #[derive(PartialEq, Eq, Clone, Hash)]
 pub struct StateElement {
@@ -20,7 +21,7 @@ impl StateElement {
         }
     }
 
-    pub fn get(&self) -> Option<Token> {
+    pub fn get(&self) -> Option<TokenIdent> {
         self.rule
         .values()
         .get(self.position)

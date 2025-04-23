@@ -1,35 +1,36 @@
 use std::collections::{HashMap, HashSet};
-use crate::Token;
 
 mod rule;
 pub use rule::Rule;
-use crate::vec_into;
+use crate::{vec_into, Token};
 
 #[derive(Debug, Clone)]
 pub struct Grammar {
+    start_symbol: Token,
     rules: HashMap<Token, HashSet<Rule>>,
 }
 
 impl Grammar {
-    pub fn new() -> Self {
+    pub fn new(start_symbol: impl Into<Token>) -> Self {
         Self {
+            start_symbol: start_symbol.into(),
             rules: HashMap::new(),
         }
     }
 
-    pub fn add(&mut self, token: impl Into<Token>, rule: Rule) {
-        let t = token.into();
+    pub fn add(&mut self, key: impl Into<Token>, rule: impl Into<Rule>) {
+        let t = key.into();
         if let Some(set) = self.rules.get_mut(&t) {
-            set.insert(rule);
+            set.insert(rule.into());
         } else {
             let mut set = HashSet::new();
-            set.insert(rule);
+            set.insert(rule.into());
             self.rules.insert(t, set);
         }
     }
 
-    pub fn add_all(&mut self, token: impl Into<Token>, rules: Vec<impl Into<Rule>>) {
-        let t = token.into();
+    pub fn add_all(&mut self, key: impl Into<Token>, rules: Vec<impl Into<Rule>>) {
+        let t = key.into();
         if let Some(set) = self.rules.get_mut(&t) {
             set.extend(vec_into(rules));
         } else {
@@ -44,5 +45,9 @@ impl Grammar {
 
     pub fn rules_mut(&mut self) -> &mut HashMap<Token, HashSet<Rule>> {
         &mut self.rules
+    }
+
+    pub fn start_symbol(&self) -> &Token {
+        &self.start_symbol
     }
 }

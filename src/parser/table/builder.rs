@@ -1,28 +1,28 @@
 use std::{
     collections::{HashMap, HashSet},
-    hash::Hash,
+    hash::Hash, process::exit,
 };
 
-use crate::Token;
+use crate::{Rule, Token, TokenIdent};
 
 use super::{state::StateElement, Action, State};
 
 use super::Table;
 use crate::Grammar;
 
-pub struct TableBuilder<'a> {
+pub struct TableBuilder {
     grammar: Grammar,
-    start_symbol: &'a Token,
+    start_symbol: Token,
     closures: HashMap<Token, Vec<StateElement>>,
-    actions: HashMap<State, HashMap<Token, Action>>,
-    follows: HashMap<Token, HashSet<Token>>,
+    actions: HashMap<State, HashMap<TokenIdent, Action>>,
+    follows: HashMap<Token, HashSet<TokenIdent>>,
+    states: HashMap<State, usize>,
 }
 
-impl<'a> TableBuilder<'a> {
-    pub fn new(grammar: &'a Grammar, start_symbol: &'a Token) -> Self {
-        let mut grammar = grammar.clone();
-
-        if !grammar.rules().contains_key(start_symbol) {
+impl TableBuilder {
+    pub fn new(mut grammar: Grammar) -> Self {
+        let start_symbol = grammar.start_symbol().clone();
+        if !grammar.rules().contains_key(&start_symbol) {
             panic!("Grammar has to contain start symbol");
         }
 
@@ -31,7 +31,7 @@ impl<'a> TableBuilder<'a> {
         let mut set = HashSet::with_capacity(iter.len());
 
         for mut v in &mut iter {
-            v.values_mut().push(Token::eof());
+            v.values_mut().push(Token::eof().into());
             set.insert(v);
         }
 
@@ -43,10 +43,12 @@ impl<'a> TableBuilder<'a> {
             closures: HashMap::new(),
             actions: HashMap::new(),
             follows: HashMap::new(),
+            states: HashMap::new(),
         }
     }
 
-    fn follow(&mut self, token: &Token) -> HashSet<Token> {
+    /// determines the follow set of a given token in the grammar.
+    fn follow(&mut self, token: &Token) -> HashSet<TokenIdent> {
         if let Some(x) = self.follows.get(token) {
             return x.clone();
         }
@@ -57,16 +59,23 @@ impl<'a> TableBuilder<'a> {
 
         for (start, rule) in self.grammar.rules() {
             for r in rule {
-                if let Some(pos) = r.values().iter().position(|x| x == token) {
-                    if pos + 1 >= r.values().len() {
-                        to_follow.push(start.clone());
-                    } else {
-                        insert_extended(
-                            &mut self.follows,
-                            token,
-                            vec![r.values()[pos + 1].clone()].into_iter().collect(),
-                        );
-                    }
+                // if let Some(pos) =  {
+                let pos = r.values().iter().position(|x| x == token);
+                
+                if pos.is_none() {
+                    continue;
+                }
+
+                let pos = pos.unwrap();
+
+                if pos + 1 < r.values().len() {
+                    insert_extended(
+                        &mut self.follows,
+                        token,
+                        vec![r.values()[pos + 1].clone()].into_iter().collect(),
+                    );
+                } else {
+                    to_follow.push(start.clone());
                 }
             }
         }
@@ -85,7 +94,6 @@ impl<'a> TableBuilder<'a> {
             return x.clone();
         }
 
-        let mut res = HashSet::new();
 
         // get rules from symbol
         let rules: Option<&HashSet<_>> = self.grammar.rules().get(symbol);
@@ -95,8 +103,6 @@ impl<'a> TableBuilder<'a> {
             return Vec::new();
         }
 
-        // println!("RULES: {symbol:?} -> {:?}", rules);
-
         // create state elements from rules
         let rules: Vec<StateElement> = rules
             .unwrap()
@@ -105,23 +111,24 @@ impl<'a> TableBuilder<'a> {
             .map(|x| StateElement::new(symbol.clone(), x))
             .collect();
 
-        // println!("ITEMS: {:?}", rules);
-
         self.closures.insert(symbol.clone(), vec![]);
 
+        let mut res = HashSet::new();
+
         for item in &rules { 
-            // println!("#{:?}", item);
             if item.get().is_none() || res.contains(item) {
-                // println!("  skipping: {:?}", item);
-                // println!("  get: {} | {}", item.get().is_none(), res.contains(item));
-                // println!("  :  RES: {:?}; \n     ITEM: {:?}", res, item);
                 continue;
             }
 
-            // println!("          adding {:?}", item);
             res.insert(item.clone());
 
-            res.extend(self.closure(&item.get().unwrap()));
+            let token = item.get().unwrap().try_into();
+
+            if token.is_err() || self.is_terminal(token.as_ref().unwrap()) {
+                continue;
+            }
+
+            res.extend(self.closure(token.as_ref().unwrap()));
         }
         res.extend(rules);
         let res = res.into_iter().collect::<Vec<_>>();
@@ -144,6 +151,8 @@ impl<'a> TableBuilder<'a> {
             return;
         }
 
+        self.states.insert(state.clone(), self.states.len());
+
         let mut reductions = HashMap::new();
         let mut transitions = HashMap::new();
 
@@ -162,7 +171,8 @@ impl<'a> TableBuilder<'a> {
                             continue;
                         }
 
-                        Self::double_action_error(state, &t, prev, Action::Reduce(item.clone()));
+                        panic!("double action error");
+                        // Self::double_action_error(state, &t, prev, Action::Reduce(item.clone()));
                     }
 
                     reductions.insert(t, Action::Reduce(item.clone()));
@@ -175,17 +185,23 @@ impl<'a> TableBuilder<'a> {
             let next_item = item.advance();
             let next_token = next_item.get();
 
-            let mut next_state = if let Some(t) = next_token {
-                self.closure(&t)
-            } else {
-                vec![]
-            };
+            let mut next_state = 
+                if let Some(t) = next_token {
+                    let token = t.try_into();
+                    if token.is_err() {
+                        vec![]
+                    } else {
+                        self.closure(&token.unwrap())
+                    }
+                } else {
+                    vec![]
+                };
 
             next_state.push(next_item);
 
             if reductions.contains_key(&token) {
-                // panic!("shift/goto and reduce for same inputs");
-                Self::double_action_error(state, &token, reductions.get(&token).unwrap(), Action::Transition(next_state))
+                panic!("shift/goto and reduce for same inputs");
+                // Self::double_action_error(state, &token, reductions.get(&token).unwrap(), Action::Transition(next_state))
             }
 
             insert_extended(&mut transitions, &token, next_state);
@@ -200,7 +216,7 @@ impl<'a> TableBuilder<'a> {
             .map(|(token, state)| {
                 (token, Action::Transition(state))
             })
-            .collect::<HashMap<Token, Action>>();
+            .collect::<HashMap<_, _>>();
 
         actions.extend(transitions);
 
@@ -211,16 +227,25 @@ impl<'a> TableBuilder<'a> {
         }
     }
 
+    fn is_terminal(&self, token: &Token) -> bool {
+        self.grammar.rules().get(token).is_none()
+    }
+
     pub fn build(mut self) -> Table {
+        let start_symbol = self.start_symbol.clone();
+        let mut f = self.follow(&start_symbol);
+        f.insert(Token::eof().into());
+
         self.follows.insert(
             self.start_symbol.clone(),
-            vec![Token::eof()].into_iter().collect(),
+            f
+            // vec![Token::eof().into()].into_iter().collect(),
         );
-
-        let state_0 = self.closure(self.start_symbol);
+        
+        let state_0 = self.closure(&start_symbol);
 
         self.advance(&state_0);
-        Table::new(self.actions, state_0)
+        Table::new(self.actions, state_0, self.grammar, self.states)
     }
 
     fn double_action_error(state: &State, token: &Token, prev: &Action, new: Action) -> ! {
