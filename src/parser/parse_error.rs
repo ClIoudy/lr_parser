@@ -1,7 +1,5 @@
 use std::{error::Error, fmt::{Debug, Display}};
 
-use crate::{tokens::Token, TokenIdent};
-
 #[derive(Clone)]
 pub struct ParseError {
     message: String,

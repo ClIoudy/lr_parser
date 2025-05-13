@@ -1,17 +1,17 @@
-use crate::{tokens::Token, TokenIdent};
-use super::{parse_error::ParseError, table::{State, StateElement, Table}, Ast};
+use crate::{Token, GrammarTrait, IdTrait, VariantId};
+use super::{parse_error::ParseError, table::{State, StateItem, Table}, Ast};
 
-pub struct ParseInstance<'a> {
-    to_parse: Vec<Token>, 
-    table: &'a Table,
-    lookahead: Token,
-    ast_stack: Vec<Ast>,
-    stack: Vec<Token>,
-    state_history: Vec<&'a State>,
+pub struct ParseInstance<'a, R: IdTrait, T: IdTrait, V: VariantId, G: GrammarTrait<R, T, V>> {
+    to_parse: Vec<Token<'a, T>>, 
+    table: &'a Table<R, T, V, G>,
+    lookahead: Token<'a, T>,
+    ast_stack: Vec<Ast<'a, T>>,
+    stack: Vec<Token<'a, T>>,
+    state_history: Vec<&'a State<R, T>>,
 }
 
-impl<'a> ParseInstance<'a> {
-    pub fn new(to_parse: Vec<Token>, table: &'a Table) -> Self {
+impl<'a, R: IdTrait, T: IdTrait, V: VariantId, G: GrammarTrait<R, T, V>> ParseInstance<'a, R, T, V, G> {
+    pub fn new(to_parse: Vec<Token<'a, T>>, table: &'a Table<R, T, V, G>) -> Self {
         let mut to_parse = to_parse;
         to_parse.reverse();
 
@@ -25,7 +25,7 @@ impl<'a> ParseInstance<'a> {
         }
     }
 
-    pub fn parse(mut self) -> Result<Ast, ParseError> {
+    pub fn parse(mut self) -> Result<Ast<'a, T>, ParseError> {
         loop {
             let state = self.state();
             let identifier = TokenIdent::from(self.lookahead.clone());

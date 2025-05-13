@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 regex-lite = "*"
+dyn-clone = "*"
 
 [lib]
 crate-type = ["lib"]

@@ -1,271 +1,177 @@
-use std::{
-    collections::{HashMap, HashSet},
-    hash::Hash, process::exit,
-};
+use std::{collections::{HashMap, HashSet}, hash::Hash, marker::PhantomData};
 
-use crate::{Rule, Token, TokenIdent};
+use crate::{ids::*, GrammarTrait, Rule, RuleVariant, VariantId };
+use super::{state::Action, State, StateItem, Table};
 
-use super::{state::StateElement, Action, State};
-
-use super::Table;
-use crate::Grammar;
-
-pub struct TableBuilder {
-    grammar: Grammar,
-    start_symbol: Token,
-    closures: HashMap<Token, Vec<StateElement>>,
-    actions: HashMap<State, HashMap<TokenIdent, Action>>,
-    follows: HashMap<Token, HashSet<TokenIdent>>,
-    states: HashMap<State, usize>,
+pub struct TableBuilder<R: IdTrait, T: IdTrait, V: VariantId, G: GrammarTrait<R, T, V>> {
+    _phantom: PhantomData<V>,
+    grammar: G,
+    closures: HashMap<R, HashSet<StateItem<R, T>>>,
+    follows: HashMap<Id<R, T>, HashSet<Id<R, T>>>,
+    actions: HashMap<State<R, T>, HashMap<Id<R, T>, Action<R, T>>>,
+    
 }
 
-impl TableBuilder {
-    pub fn new(mut grammar: Grammar) -> Self {
-        let start_symbol = grammar.start_symbol().clone();
-        if !grammar.rules().contains_key(&start_symbol) {
-            panic!("Grammar has to contain start symbol");
-        }
-
-        let mut iter = grammar.rules_mut().remove(&start_symbol).unwrap().into_iter();
-
-        let mut set = HashSet::with_capacity(iter.len());
-
-        for mut v in &mut iter {
-            v.values_mut().push(Token::eof().into());
-            set.insert(v);
-        }
-
-        grammar.rules_mut().insert(start_symbol.clone(), set);
-
+impl<R: IdTrait, T: IdTrait, V: VariantId, G: GrammarTrait<R, T, V>> TableBuilder<R, T, V, G> {
+    pub fn new(grammar: G) -> Self {
         Self {
+            _phantom: PhantomData,
             grammar,
-            start_symbol,
             closures: HashMap::new(),
-            actions: HashMap::new(),
             follows: HashMap::new(),
-            states: HashMap::new(),
+            actions: HashMap::new(),
         }
     }
 
-    /// determines the follow set of a given token in the grammar.
-    fn follow(&mut self, token: &Token) -> HashSet<TokenIdent> {
-        if let Some(x) = self.follows.get(token) {
-            return x.clone();
+    pub fn closure(&mut self, id: &R) -> HashSet<StateItem<R, T>> {
+        if let Some(res) = self.closures.get(id) {
+            return res.clone();
         }
 
-        insert_extended(&mut self.follows, token, HashSet::new());
-
-        let mut to_follow = vec![];
-
-        for (start, rule) in self.grammar.rules() {
-            for r in rule {
-                // if let Some(pos) =  {
-                let pos = r.values().iter().position(|x| x == token);
-                
-                if pos.is_none() {
-                    continue;
-                }
-
-                let pos = pos.unwrap();
-
-                if pos + 1 < r.values().len() {
-                    insert_extended(
-                        &mut self.follows,
-                        token,
-                        vec![r.values()[pos + 1].clone()].into_iter().collect(),
-                    );
-                } else {
-                    to_follow.push(start.clone());
-                }
-            }
-        }
-
-        for f in to_follow {
-            let v = self.follow(&f);
-            insert_extended(&mut self.follows, token, v);
-        }
-
-        self.follows.get(token).unwrap().clone()
-    }
-
-    fn closure(&mut self, symbol: &Token) -> Vec<StateElement> {
-        // check if already computed once
-        if let Some(x) = self.closures.get(symbol) {
-            return x.clone();
-        }
-
-
-        // get rules from symbol
-        let rules: Option<&HashSet<_>> = self.grammar.rules().get(symbol);
-
-        // if symbol is a terminal, rules will be none -> just return empty
-        if rules.is_none() {
-            return Vec::new();
-        }
-
-        // create state elements from rules
-        let rules: Vec<StateElement> = rules
-            .unwrap()
-            .clone()
-            .into_iter()
-            .map(|x| StateElement::new(symbol.clone(), x))
-            .collect();
-
-        self.closures.insert(symbol.clone(), vec![]);
-
+        let rules = self.grammar.rule(id);
+        self.closures.insert(id.clone(), HashSet::new());
+        
         let mut res = HashSet::new();
-
-        for item in &rules { 
-            if item.get().is_none() || res.contains(item) {
+        
+        // for r in rules add itself and its closure to the result
+        for r in rules {
+            if r.values().first().is_none() {
                 continue;
             }
 
-            res.insert(item.clone());
-
-            let token = item.get().unwrap().try_into();
-
-            if token.is_err() || self.is_terminal(token.as_ref().unwrap()) {
-                continue;
+            if let Id::Rule(x) = r.values().first().unwrap() {
+                res.extend(self.closure(x));
             }
+            
+            let item = StateItem::new(r);
 
-            res.extend(self.closure(token.as_ref().unwrap()));
+            res.insert(item);
         }
-        res.extend(rules);
-        let res = res.into_iter().collect::<Vec<_>>();
-        self.closures.insert(symbol.clone(), res.clone());
+        
+        self.closures.insert(id.clone(), res.clone());
+        
         res
     }
 
-    fn advance(&mut self, state: &State) {
-        // for each item
-        // get current token
-        // create new state transition from token to
-        // advanced item
-        // + closure, if advanced item has a token it exists
-        // keep track of new transitions
+    fn follow(&mut self, id: &Id<R, T>) -> HashSet<Id<R, T>> {
+        self.follows.insert(id.clone(), HashSet::new());
+        let mut res = HashSet::new();
 
-        // insert transitions
-        // advance the transition targets
+        for rule in self.grammar.all_rules() {
+            let values = rule.values();
+
+            let occurences = find_all(rule.values().iter(), |x| x == id);
+
+            for i in occurences {
+                if i + 1 < values.len() {
+                    res.insert(values[i+1].clone());
+                } else {
+                    res.extend(self.follow(
+                        &Id::Rule(rule.start_symbol())
+                    ));
+                }
+            }
+        }
+
+        res
+    }
+
+    fn expand(&mut self, state: &State<R, T>) {
+        let mut actions = HashMap::new();
+        let mut transitions = HashMap::new();
 
         if self.actions.contains_key(state) {
             return;
         }
 
-        self.states.insert(state.clone(), self.states.len());
+        self.actions.insert(state.clone(), HashMap::new());
 
-        let mut reductions = HashMap::new();
-        let mut transitions = HashMap::new();
-
-        for item in state {
-            let token = item.get();
-            let action = Action::Reduce(item.clone());
-
-            if token.is_none() {
-                let follow = self.follow(&item.start_symbol());
-
-                for t in follow {
-                    if reductions.contains_key(&t) {
-                        let prev = reductions.get(&t).unwrap();
-
-                        if *prev == action {
-                            continue;
-                        }
-
-                        panic!("double action error");
-                        // Self::double_action_error(state, &t, prev, Action::Reduce(item.clone()));
-                    }
-
-                    reductions.insert(t, Action::Reduce(item.clone()));
+        for item in state.items() {
+            if let Some(k) = item.get() {
+                let new_state = self.make_state(k, item);
+                extend_set_map(&mut transitions, k, new_state);
+                // Self::add_action(&mut actions, k.clone(), Action::SHIFT(new_state), state);
+            } else {
+                for (k, v) in self.reduction(item) {
+                    // reductions.insert(k, v);
+                    Self::add_action(&mut actions, k, Action::REDUCE(v), state);
                 }
-
-                continue;
             }
-
-            let token = token.unwrap();
-            let next_item = item.advance();
-            let next_token = next_item.get();
-
-            let mut next_state = 
-                if let Some(t) = next_token {
-                    let token = t.try_into();
-                    if token.is_err() {
-                        vec![]
-                    } else {
-                        self.closure(&token.unwrap())
-                    }
-                } else {
-                    vec![]
-                };
-
-            next_state.push(next_item);
-
-            if reductions.contains_key(&token) {
-                panic!("shift/goto and reduce for same inputs");
-                // Self::double_action_error(state, &token, reductions.get(&token).unwrap(), Action::Transition(next_state))
-            }
-
-            insert_extended(&mut transitions, &token, next_state);
         }
 
-        let mut actions = reductions;
-
-        let added_states = transitions.clone().into_values().collect::<Vec<State>>();
-
-        let transitions = transitions
-            .into_iter()
-            .map(|(token, state)| {
-                (token, Action::Transition(state))
-            })
-            .collect::<HashMap<_, _>>();
-
-        actions.extend(transitions);
+        for (k, new_state) in transitions {
+            let new_state = State::new(new_state);
+            self.expand(&new_state);
+            Self::add_action(&mut actions, k, Action::SHIFT(new_state), state);
+        } 
 
         self.actions.insert(state.clone(), actions);
 
-        for state in added_states {
-            self.advance(&state);
+    }
+
+    fn add_action(map: &mut HashMap<Id<R, T>, Action<R, T>>, k: Id<R, T>, v: Action<R, T>, from: &State<R, T>) {
+        if map.contains_key(&k) {
+            panic!("double action error: key: {k:?}, \nprev value: {v:#?} \nother value: {:#?} \nfrom: {from:#?}", map.get(&k).unwrap())
+        } else {
+            map.insert(k, v);
         }
     }
 
-    fn is_terminal(&self, token: &Token) -> bool {
-        self.grammar.rules().get(token).is_none()
-    }
-
-    pub fn build(mut self) -> Table {
-        let start_symbol = self.start_symbol.clone();
-        let mut f = self.follow(&start_symbol);
-        f.insert(Token::eof().into());
-
-        self.follows.insert(
-            self.start_symbol.clone(),
-            f
-            // vec![Token::eof().into()].into_iter().collect(),
-        );
+    fn make_state(&mut self, k: &Id<R, T>, item: &StateItem<R, T>) -> HashSet<StateItem<R, T>> {
+            // state: item + closure of new item
+            let mut new_state = HashSet::new();
+            println!("{:?}", item);
+            println!("{:?}", item.advance());
+            new_state.insert(item.advance().unwrap());
         
-        let state_0 = self.closure(&start_symbol);
-
-        self.advance(&state_0);
-        Table::new(self.actions, state_0, self.grammar, self.states)
+            if let Id::Rule(r) = k {
+                new_state.extend(self.closure(&r));
+            }
+            
+            new_state
     }
 
-    fn double_action_error(state: &State, token: &Token, prev: &Action, new: Action) -> ! {
-        eprintln!("double action:");
-        eprintln!("    previous: {:?}", prev);
-        eprintln!("    new: {:?}", new);
-        eprintln!("    state: {:?}", state);
-        eprintln!("    token: {:?}", token);
-        panic!()
+    fn reduction(&mut self, item: &StateItem<R, T>) -> HashSet<(Id<R, T>, StateItem<R, T>)> {
+        
+        let mut res = HashSet::new();
+
+        for f in self.follow(&Id::Rule(item.start_symbol().clone())) {
+            res.insert((f, item.clone()));
+        }
+
+        res
+
+    }
+
+    pub fn build(mut self) -> Table<R, T, V, G> {
+        let start_symbol = self.grammar.start_symbol().clone();
+        let start_state = State::new(self.closure(&start_symbol));
+        self.expand(&start_state.clone());
+        Table::new(start_state, self.actions, self.grammar)
     }
 }
 
-fn insert_extended<Item, K: Hash + Eq + Clone, V: IntoIterator<Item = Item> + Extend<Item>>(
-    map: &mut HashMap<K, V>,
-    k: &K,
-    v: V,
-) {
-    if let Some(x) = map.get_mut(&k) {
-        x.extend(v.into_iter());
+fn find_all<T>(iter: impl Iterator<Item=T>, predicate: impl Fn(T) -> bool) -> Vec<usize> {
+    let mut res = vec![];
+
+    for (i, x) in iter.enumerate() {
+        if predicate(x) {
+            res.push(i);
+        }
+    }
+
+    res
+}
+
+fn extend_set_map<K: Hash + Eq + Clone, V: Hash + Eq>(map: &mut HashMap<K, HashSet<V>>, key: &K, value: impl IntoIterator<Item=V>) {
+    if let Some(x) = map.get_mut(key) {
+        x.extend(value);
     } else {
-        map.insert(k.clone(), v);
+        let mut x = HashSet::new();
+        // x.insert(value);
+        x.extend(value);
+        map.insert(key.clone(), x);
     }
 }
+
+// id is user-specified and lexer uses ids too instead of labels

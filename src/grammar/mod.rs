@@ -1,53 +1,15 @@
-use std::collections::{HashMap, HashSet};
+use std::any::Any;
 
-mod rule;
-pub use rule::Rule;
-use crate::{vec_into, Token};
+pub mod rule;
+pub use rule::*;
 
-#[derive(Debug, Clone)]
-pub struct Grammar {
-    start_symbol: Token,
-    rules: HashMap<Token, HashSet<Rule>>,
-}
+use crate::{Id, IdTrait};
+pub type Grammar<R, T, V> = Box<dyn GrammarTrait<R, T, V>>;
 
-impl Grammar {
-    pub fn new(start_symbol: impl Into<Token>) -> Self {
-        Self {
-            start_symbol: start_symbol.into(),
-            rules: HashMap::new(),
-        }
-    }
 
-    pub fn add(&mut self, key: impl Into<Token>, rule: impl Into<Rule>) {
-        let t = key.into();
-        if let Some(set) = self.rules.get_mut(&t) {
-            set.insert(rule.into());
-        } else {
-            let mut set = HashSet::new();
-            set.insert(rule.into());
-            self.rules.insert(t, set);
-        }
-    }
-
-    pub fn add_all(&mut self, key: impl Into<Token>, rules: Vec<impl Into<Rule>>) {
-        let t = key.into();
-        if let Some(set) = self.rules.get_mut(&t) {
-            set.extend(vec_into(rules));
-        } else {
-            let set = HashSet::from_iter(vec_into(rules));
-            self.rules.insert(t, set);
-        }
-    }
-
-    pub fn rules(&self) -> &HashMap<Token, HashSet<Rule>> {
-        &self.rules
-    }
-
-    pub fn rules_mut(&mut self) -> &mut HashMap<Token, HashSet<Rule>> {
-        &mut self.rules
-    }
-
-    pub fn start_symbol(&self) -> &Token {
-        &self.start_symbol
-    }
+pub trait GrammarTrait<R: IdTrait, T: IdTrait, V: VariantId> {
+    fn rule(&self, id: &R) -> Vec<Rule<R, T, V>>;
+    fn build_rule(&self, id: &Id<R, T>, children: Vec<Box<dyn Any>>) -> Option<Rule<R, T, V>>;
+    fn start_symbol(&self) -> R;
+    fn all_rules(&self) -> Vec<Rule<R, T, V>>;
 }
