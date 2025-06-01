@@ -15,15 +15,9 @@ mod table_builder;
 #[proc_macro]
 pub fn build_parser(input: TokenStream) -> TokenStream {
     
-    
     let grammar = syn::parse_macro_input!(input as Grammar);
-    println!("{:#?}", grammar);
-    let mut rules = grammar.rules;
-
     
-    let expanded = quote! {
+    let table = table_builder::table(grammar);
 
-    };
-
-    TokenStream::new()
+    table
 }

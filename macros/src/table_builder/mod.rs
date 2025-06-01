@@ -1,1 +1,45 @@
+use proc_macro::TokenStream;
+use quote::quote;
+
+use crate::grammar::Grammar;
+
 mod table;
+
+mod build_rule_fn;
+mod action_fn;
+mod start_state_fn;
+mod is_end_state_fn;
+
+
+pub fn table(grammar: Grammar) -> TokenStream {
+
+    // let build_rule: TokenStream build_rule::build_rules_function(&grammar);
+
+
+
+    // let expanded = quote! {
+    //     struct Table {
+
+    //     }
+
+    //     impl TableTrait for Table {
+    //         fn start_state(&self) -> &State {
+
+    //         }
+
+    //         fn action(&self, state: &State, token: &Id) -> Option<Action> {
+
+    //         }
+        
+    //         fn is_end_state(&self, state: &State) -> bool {
+
+    //         }
+        
+    //         fn build_rule(&self, children: Vec<Box<dyn Any>>, variat: Variant) -> Box<dyn RuleTrait> {
+    //             #build_rule
+    //         }
+    //     }
+    // };
+
+    TokenStream::new()
+}
