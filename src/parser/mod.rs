@@ -1,34 +1,32 @@
-mod table;
-use parse_error::ParseError;
-use table::{TableBuilder, Table};
-use crate::{tokens::Token, Grammar};
-mod ast;
-pub use ast::Ast;
-mod parse_error;
-mod parse_instance;
-use parse_instance::ParseInstance;
+use std::any::Any;
 
-pub struct Parser {
-    table: Table,
+use crate::Token;
+mod error;
+use error::ParseError;
+
+mod instance;
+use instance::ParseInstance;
+
+use common::*;
+
+mod state_machine;
+use state_machine::StateMachine;
+
+pub struct Parser<T: TableTrait> {
+    state_machine: StateMachine,
+    table: T,
 }
 
-impl Parser {
-    pub fn new(grammar: Grammar) -> Self {
-        let table = TableBuilder::new(grammar).build();
-
+impl<T: TableTrait> Parser<T> {
+    pub fn new(table: T) -> Self {
         Self {
+            state_machine: StateMachine::new(&table),
             table,
         }
     }
 
-    pub fn table(&self) -> &Table {
-        &self.table
-    }
 
-    pub fn parse(&self, to_parse: Vec<Token>) -> Result<Ast, ParseError> {
-        ParseInstance::new(
-            to_parse, 
-            &self.table, 
-        ).parse()
+    pub fn parse<S: 'static>(&self, to_parse: Vec<Token>) -> Result<Box<S>, ParseError> {
+        ParseInstance::new(&self.table, to_parse).parse()
     }
 }
