@@ -1,13 +1,22 @@
-pub struct RuleId {
-
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub struct NonTerminal {
+    pub symbol: String,
 }
 
-pub enum TokenId<'a> {
+impl NonTerminal {
+    pub fn new(symbol: String) -> Self {
+        Self { symbol }
+    }
+}
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum Terminal {
     EOF,
-    Value(&'a str),
+    Value(String),
 }
 
-pub enum Id<'a> {
-    Rule(RuleId),
-    Token(TokenId<'a>),
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub enum Id {
+    NonTerminal(NonTerminal),
+    Terminal(Terminal),
 }

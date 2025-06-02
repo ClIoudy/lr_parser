@@ -5,11 +5,6 @@ use crate::grammar::Grammar;
 
 mod table;
 
-mod build_rule_fn;
-mod action_fn;
-mod start_state_fn;
-mod is_end_state_fn;
-
 
 pub fn table(grammar: Grammar) -> TokenStream {
 

@@ -1,33 +1,55 @@
 use std::collections::HashMap;
 
+use common::{Id, NonTerminal, Variant};
 use syn::{parse::{discouraged::Speculative, Parse, ParseStream}, punctuated::Punctuated, token::Token, Ident, Token};
 mod rule;
 pub use rule::Rule;
-use variant::Variant;
-mod variant;
-mod rule_element;
 
+mod id_parse;
+use id_parse::IdParse;
+
+use crate::ParseShortcuts;
 
 #[derive(Debug)]
 pub struct Grammar {
-    pub rules: HashMap<String, Vec<Variant>>,
+    rules: HashMap<NonTerminal, Vec<Variant>>,
 }
 
 impl Grammar {
+    pub fn new(rules: HashMap<NonTerminal, Vec<Variant>>) -> Self {
+        Self {
+            rules
+        }
+    }
+
     fn parse_start_rule(input: syn::parse::ParseStream) -> syn::Result<Rule> {
         let fork = input.fork();
 
         let pound_missing = fork.parse::<Token![#]>().is_err();
         let mut rule = fork.parse::<Rule>()?;
 
-        if pound_missing || rule.symbol != "S".to_string() {
+        if pound_missing || rule.symbol() != "S" {
             Err(input.error("expected '#S' as start symbol of the grammar"))
         } else {
             input.advance_to(&fork);
             input.parse::<Token![;]>()?;
-            rule.symbol = "#S".to_string();
+            rule.set_symbol("#S".to_string());
             Ok(rule)
         }
+    }
+
+    pub fn rule(&self, id: &NonTerminal) -> &Vec<Variant> {
+        let res = self.rules.get(id);
+
+        if res.is_none() {
+            panic!("unknown rule {:?}", id.symbol);
+        }
+
+        res.unwrap()
+    }
+
+    pub fn all_rules(&self) -> &HashMap<NonTerminal, Vec<Variant>> {
+        &self.rules
     }
 }
 
@@ -43,26 +65,19 @@ impl Parse for Grammar {
 
         rules.extend(start_rule);
 
-        let rules = rules.into_iter().fold(HashMap::new(), |mut acc: HashMap<String, Vec<variant::Variant>>, x| {
+        let rules = rules.into_iter().fold(HashMap::new(), |mut acc: HashMap<NonTerminal, Vec<Variant>>, x| {
 
-            if let Some(entry) = acc.get_mut(&x.symbol) {
+            if let Some(entry) = acc.get_mut(&x.id) {
                 entry.push(x.variant)
             } else {
-                acc.insert(x.symbol, vec![x.variant]);
+                acc.insert(x.id, vec![x.variant]);
             }
 
             acc
         });
 
-        Ok(Self {
-            rules
-        })
+        Ok(Self::new(rules))
     }
-}
-
-trait ParseShortcuts {
-    fn ident(&self) -> syn::Result<Ident>;
-    fn punctuated_vec<T: Parse, P: Parse + Token>(&self) -> syn::Result<Vec<T>>;
 }
 
 impl ParseShortcuts for ParseStream<'_> {
