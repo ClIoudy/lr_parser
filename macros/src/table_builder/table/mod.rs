@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use common::{Action, Id, State, Terminal};
+use common::{Action, Id, Terminal};
 
 mod builder;
 mod item;
