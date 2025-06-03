@@ -1,42 +1,55 @@
-use common::{NonTerminal, Variant};
-use syn::{parse::Parse, Ident, Token};
+use syn::{parse::Parse, Token};
 
-use crate::ParseShortcuts;
+mod start_rule;
+use common::{Id, NonTerminal, Variant, VariantId};
 
-mod variant_parse;
-use variant_parse::VariantParser;
+pub(super) use start_rule::StartRule;
 
-#[derive(Debug)]
-pub struct Rule {
-    pub id: NonTerminal,
-    pub variant: Variant,
-}
+// mod variant_parser;
+// use variant_parser::VariantParser;
 
-impl Rule {
-    pub fn symbol(&self) -> &str {
-        &self.id.symbol
-    }
+use crate::{grammar::IdParse, ParseShortcuts};
 
-    pub fn set_symbol(&mut self, symbol: String) {
-        self.id = NonTerminal { symbol }
-    }
-}
+pub (super) struct VariantParser(pub Variant);
 
-
-impl Parse for Rule {
+impl Parse for VariantParser {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        
         let symbol = input.ident()?.to_string();
+
         input.parse::<Token![:]>()?;
-        // let name = input.ident()?;
 
-        // input.parse::<Token![->]>()?;
+        let name = input.ident()?.to_string();
+        
+        input.parse::<Token![->]>()?;
 
-        let variant_parse: VariantParser = input.parse()?;
-
-        Ok(Self {
-            id: NonTerminal::new(symbol),
-            variant: variant_parse.0,
-        })
+        let values: Vec<Id> = input
+            .punctuated_vec::<IdParse, Token![,]>()?
+            .into_iter()
+            .map(|x| x.0)
+            .collect();
+        
+        // let id = VariantId::new(NonTerminal::new(name), values.len());
+        let id = VariantId::new(symbol, name, values.len());
+        let variant = Variant::new(values, id);
+        Ok(Self(variant))
     }
 }
+
+
+// pub struct Rule {
+//     pub symbol: NonTerminal,
+//     pub variant: Variant,
+// }
+
+// impl Parse for Rule {
+//     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+//         let symbol = input.ident()?;
+//         input.parse::<Token![:]>()?;
+//         let variant = input.parse::<VariantParser>()?.0;
+
+//         Ok(Self {
+//             symbol: NonTerminal::new(symbol.to_string()),
+//             variant,
+//         })
+//     }
+// }

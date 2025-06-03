@@ -1,7 +1,7 @@
-use common::{State, TableTrait};
+use common::{StateId, TableTrait};
 
 pub struct StateMachine {
-    state_history: Vec<State>,
+    state_history: Vec<StateId>,
 }
 
 impl StateMachine {
@@ -11,11 +11,11 @@ impl StateMachine {
         }
     }
 
-    pub fn state(&self) -> &State {
+    pub fn state(&self) -> &StateId {
         self.state_history.last().unwrap()
     }
 
-    pub fn advance(&mut self, state: State) {
+    pub fn advance(&mut self, state: StateId) {
         self.state_history.push(state);
     }
 

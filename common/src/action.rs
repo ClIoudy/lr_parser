@@ -1,13 +1,7 @@
-use crate::Variant;
-
 use crate::StateId;
-
-pub struct Reduction {
-    pub variant: Variant,
-    pub length: usize,
-}
+use crate::VariantId;
 
 pub enum Action {
     Shift(StateId),
-    Reduce(Reduction)
+    Reduce(VariantId)
 }

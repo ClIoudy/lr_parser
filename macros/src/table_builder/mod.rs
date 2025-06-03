@@ -6,6 +6,7 @@ use crate::grammar::Grammar;
 mod table;
 
 
+
 pub fn table(grammar: Grammar) -> TokenStream {
 
     // let build_rule: TokenStream build_rule::build_rules_function(&grammar);
@@ -36,5 +37,5 @@ pub fn table(grammar: Grammar) -> TokenStream {
     //     }
     // };
 
-    TokenStream::new()
+    todo!()
 }

@@ -10,3 +10,6 @@ proc-macro = true
 syn = "*"
 quote = "*"
 common = { path = "../common" }
+
+[dev-dependencies]
+proc-macro2 = "*"

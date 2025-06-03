@@ -32,7 +32,7 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
                 break;
             }
             
-            let action = self.table.action(state, &Id::Token(lookahead.id()));
+            let action = self.table.action(state, &Id::Terminal(lookahead.id()));
 
             if action.is_none() {
                 return Err(ParseError::expected());
@@ -59,7 +59,7 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
             .unwrap_or(Token::EOF)
     }
 
-    fn shift(&mut self, new_state: State, lookahead: Token) {
+    fn shift(&mut self, new_state: StateId, lookahead: Token) {
         self.state_machine.advance(new_state);
 
         match lookahead {
@@ -68,8 +68,8 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
         }
     }
 
-    fn reduce(&mut self, reduction: Reduction) {
-        let l = reduction.length;
+    fn reduce(&mut self, variant: VariantId) {
+        let l = variant.length();
         let n = self.result_stack.len();
 
         // go back to state where rule originated
@@ -77,13 +77,12 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
 
         // get children
         let children = self.result_stack.split_off(n - l);
-        let variant = reduction.variant;
 
         // create new rule
-        let new_rule = self.table.build_rule(children, variant);
+        let new_rule = self.table.build_rule(variant, children);
 
         // advance state
-        let transition = self.table.action(self.state_machine.state(), &new_rule.id());
+        let transition = self.table.action(self.state_machine.state(), &Id::NonTerminal(new_rule.id()));
 
         match transition {
             Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),

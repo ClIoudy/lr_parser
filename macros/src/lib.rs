@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![warn(clippy::todo)]
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -7,6 +8,9 @@ use grammar::Grammar;
 use syn::{parse::Parse, token::Token, Ident};
 
 mod table_builder;
+
+#[cfg(test)]
+mod tests;
 
 /// rule syntax:
 /// `rule` = \<symbol>: \<name> -> \<Elements> 
@@ -19,12 +23,13 @@ mod table_builder;
 pub fn build_parser(input: TokenStream) -> TokenStream {
     let grammar = syn::parse_macro_input!(input as Grammar);
 
-    let table = table_builder::table(grammar);
-
-    table
+    // let table = table_builder::table(grammar);
+    TokenStream::new()
+    // table
 }
 
 pub (crate) trait ParseShortcuts {
     fn ident(&self) -> syn::Result<Ident>;
     fn punctuated_vec<T: Parse, P: Parse + Token>(&self) -> syn::Result<Vec<T>>;
+    fn expect(&self, expected: &str) -> syn::Result<()>; 
 }
