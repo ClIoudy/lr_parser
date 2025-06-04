@@ -1,6 +1,14 @@
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+use std::fmt::Debug;
+
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct NonTerminal {
     pub x: String,
+}
+
+impl Debug for NonTerminal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.x)
+    }
 }
 
 impl NonTerminal {
@@ -41,7 +49,7 @@ impl PartialEq<str> for Terminal {
 }
 
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub enum Terminal {
     EOF,
     Value(String),
@@ -56,6 +64,15 @@ impl From<&str> for Terminal {
 impl From<String> for Terminal {
     fn from(value: String) -> Self {
         Self::Value(value)
+    }
+}
+
+impl Debug for Terminal {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Terminal::Value(x) => f.write_str(x),
+            Terminal::EOF => f.write_str("$"),
+        }
     }
 }
 

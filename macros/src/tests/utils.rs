@@ -1,5 +1,7 @@
 use common::{Id, Terminal, Variant};
 
+pub type TestRet = Result<(), Box<dyn std::error::Error>>;
+
 pub struct VariantCompare {
     name: &'static str,
     values: Vec<&'static str>,

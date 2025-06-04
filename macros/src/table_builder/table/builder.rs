@@ -110,7 +110,7 @@ impl<'a> TableBuilder<'a> {
         res
     }
 
-    fn expand(&mut self, state: &State) {
+    pub fn expand(&mut self, state: &State) {
         if self.shifts.contains_key(state) {
             return;
         }
@@ -120,7 +120,7 @@ impl<'a> TableBuilder<'a> {
         let mut new_states = HashMap::new();
 
         for item in state.items() {
-            if let Some(k) = item.get() {
+            if let Some(k) = dbg!(item.get()) {
                 // SHIFT
                 let new_state = self.make_state(k, item);
                 extend_set_map(&mut new_states, k, new_state);
@@ -172,16 +172,22 @@ impl<'a> TableBuilder<'a> {
         let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
         self.expand(&start_state);
 
-        // number states
-
-        // create actions
-        // create expected
-
-
         // Table::new(expected, actions);
         todo!()
         // Table::new()
     }
+
+    #[cfg(test)]
+    pub fn shifts(&self) -> &HashMap<State, HashMap<Id, State>> {
+        &self.shifts
+    }
+
+    #[cfg(test)]
+    pub fn reductions(&self) -> &HashMap<State, HashMap<Id, VariantId>> {
+        &self.reductions
+    }
+
+    
 }
 
 fn find_all<T>(iter: impl Iterator<Item=T>, predicate: impl Fn(T) -> bool) -> Vec<usize> {
