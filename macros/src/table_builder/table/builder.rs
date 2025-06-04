@@ -1,6 +1,6 @@
 use std::{collections::{HashMap, HashSet}, hash::Hash};
 
-use common::{Action, Id, NonTerminal, VariantId};
+use common::{Action, Id, NonTerminal, Terminal, Variant, VariantId};
 
 
 use super::item::StateItem;
@@ -10,18 +10,43 @@ use crate::{grammar::Grammar, table_builder::table::{state::State, Table}};
 pub struct TableBuilder<'a> {
     grammar: &'a Grammar,
     closures: HashMap<NonTerminal, HashSet<StateItem>>,
-    follows: HashMap<Id, HashSet<Id>>,
+    follows: HashMap<NonTerminal, HashSet<Id>>,
     // actions: HashMap<State, HashMap<Id, Action>>,
     shifts: HashMap<State, HashMap<Id, State>>,
     reductions: HashMap<State, HashMap<Id, VariantId>>
 }
 
 impl<'a> TableBuilder<'a> {
-    pub fn new(grammar: &'a Grammar) -> Self {
+    pub fn new(mut grammar: &'a Grammar) -> Self {
+
+        // let start_rules = grammar.rule_mut(&NonTerminal::start_symbol());
+
+        // for s in start_rules {
+        //     s.values_mut().push(Id::Terminal(Terminal::EOF));
+        // }
+
+        //-----
+
+        // let new_start_symbol = "#E".to_string();
+        // let name = "_".to_string();
+
+        // let values = vec![Id::NonTerminal(NonTerminal::start_symbol()), Id::Terminal(Terminal::EOF)];
+
+        // let id = VariantId::new(new_start_symbol.clone(), name, 2);
+
+        // let v = Variant::new(values, id);
+
+        // grammar.add_rule(new_start_symbol.into(), vec![v]);
+
+        let mut f = HashSet::new();
+        f.insert(Id::T(Terminal::EOF));
+        let mut follows = HashMap::new();
+        follows.insert(NonTerminal::start_symbol(), f);
+
         Self {
             grammar,
             closures: HashMap::new(),
-            follows: HashMap::new(),
+            follows,
             shifts: HashMap::new(),
             reductions: HashMap::new(),
         }
@@ -38,14 +63,16 @@ impl<'a> TableBuilder<'a> {
         
         let mut res = HashSet::new();
         
+        let mut others = HashSet::new();
+
         // for r in rules add itself and its closure to the result
         for r in variants {
             if r.values().first().is_none() {
                 continue;
             }
 
-            if let Id::NonTerminal(x) = r.values().first().unwrap() {
-                res.extend(self.closure(x));
+            if let Id::N(x) = r.values().first().unwrap() {
+                others.insert(x.clone());
             }
 
             let item = StateItem::new(r.clone());
@@ -53,12 +80,16 @@ impl<'a> TableBuilder<'a> {
             res.insert(item);
         }
         
+        for o in others {
+            res.extend(self.closure(&o));
+        }
+
         self.closures.insert(id.clone(), res.clone());
         
         res
     }
 
-    pub fn follow(&mut self, id: &Id) -> HashSet<Id> {
+    pub fn follow(&mut self, id: &NonTerminal) -> HashSet<Id> {        
         if let Some(res) = self.follows.get(id) {
             return res.clone();
         }
@@ -66,12 +97,14 @@ impl<'a> TableBuilder<'a> {
         self.follows.insert(id.clone(), HashSet::new());
         let mut res = HashSet::new();
 
-        for (id, variants) in self.grammar.all_rules() {
+        let mut to_follow = HashSet::new();
+
+        for (rule_id, variants) in self.grammar.all_rules() {
             for v in variants {
                 let values = v.values();
 
                 let occurences = find_all(v.values().iter(), |x| {
-                    if let Id::NonTerminal(y) = x {
+                    if let Id::N(y) = x {
                         y == id
                     } else {
                         false
@@ -80,15 +113,16 @@ impl<'a> TableBuilder<'a> {
 
                 for i in occurences {
                     if i + 1 < values.len() {
-                        println!("adding...");
                         res.insert(values[i+1].clone());
                     } else {
-                        res.extend(self.follow(
-                            &Id::NonTerminal(id.clone())
-                        ));
+                        to_follow.insert(rule_id.clone());
                     }
                 }
             }
+        }
+
+        for f in to_follow {
+            res.extend(self.follow(&f));
         }
 
         self.follows.insert(id.clone(), res.clone());
@@ -112,7 +146,7 @@ impl<'a> TableBuilder<'a> {
                 extend_set_map(&mut new_states, k, new_state);
             } else {
                 // REDUCTION
-                for id in self.follow(&Id::NonTerminal(item.symbol().clone())) {
+                for id in self.follow(item.symbol()) {
                     let v = item.variant().id().clone();
 
                     if reductions.insert(id.clone(), v).is_some() {
@@ -132,41 +166,28 @@ impl<'a> TableBuilder<'a> {
         self.shifts.insert(state.clone(), transitions);
     }
 
-
-    fn add_reduction(&mut self, state: &State, id: Id, variant: VariantId) {
-        self.reductions.get_mut(state);
-    }
-
-    // fn add_action<V>(map: &mut HashMap<Id, V>, state: &State, id: Id, value: V) {
-    //     if map.contains_key(&k) {
-    //         panic!("double action error: key: {k:?}, \nprev value: {v:#?} \nother value: {:#?} \nfrom: {from:#?}", map.get(&k).unwrap())
-    //     } else {
-    //         map.insert(k, v);
-    //     }
-    // }
-
     fn make_state(&mut self, k: &Id, item: &StateItem) -> HashSet<StateItem> {
-            // state: item + closure of new item
-            let advanced = item.advance();
-            
-            if advanced.is_none() {
-                return HashSet::new();
-            }
-            
-            let mut new_state = HashSet::new();
-
-            new_state.insert(item.advance().unwrap());
+        // state: item + closure of new item
+        let advanced = item.advance();
         
-            if let Id::NonTerminal(r) = k {
-                new_state.extend(self.closure(&r));
-            }
-            
-            new_state
+        if advanced.is_none() {
+            return HashSet::new();
+        }
+        
+        let mut new_state = HashSet::new();
+        new_state.insert(item.advance().unwrap());
+    
+        if let Id::N(r) = k {
+            new_state.extend(self.closure(&r));
+        }
+        
+        new_state
     }
 
     pub fn build(mut self) -> Table {
-
-        todo!("make sure to include $ in states");
+        todo!("number states");
+        todo!("construct actions");
+        todo!("construct expected");
         
         let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
         self.expand(&start_state);

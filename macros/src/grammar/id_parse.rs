@@ -7,15 +7,13 @@ pub(super) struct IdParse(pub Id);
 impl Parse for IdParse {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let id = if input.peek(LitStr) {
-        
-            Id::Terminal(
+            Id::T(
                 common::Terminal::Value(
                     input.parse::<LitStr>()?.value()                        
                 )
             )
-        
         } else if input.peek(Ident) {
-            Id::NonTerminal(
+            Id::N(
                 NonTerminal::new(
                     input.parse::<Ident>()?.to_string()
                 )
@@ -33,8 +31,8 @@ impl Parse for IdParse {
 impl Debug for IdParse {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&match &self.0 {
-            Id::NonTerminal(x) => format!("\"{x:?}\""),
-            Id::Terminal(x) => format!("{x:?}")
+            Id::N(x) => format!("\"{x:?}\""),
+            Id::T(x) => format!("{x:?}")
         })
     }
 }

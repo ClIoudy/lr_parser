@@ -20,8 +20,8 @@ impl PartialEq<VariantCompare> for Variant {
 
         let values: Vec<_> = self.values().iter().map(|id| {
             match id {
-                Id::NonTerminal(non_terminal) => &non_terminal.x,
-                Id::Terminal(t) => match t {
+                Id::N(non_terminal) => &non_terminal.x,
+                Id::T(t) => match t {
                     Terminal::EOF => panic!("Cannot compare EOF"),
                     Terminal::Value(x) => x.as_str()
                 }
@@ -29,5 +29,17 @@ impl PartialEq<VariantCompare> for Variant {
         }).collect();
 
         name_eq && values == other.values
+    }
+}
+
+#[macro_export]
+macro_rules! set {
+    {} => {
+        std::collections::HashSet::new();
+    };
+    
+    {$($x:expr),+ $(,)?} => {
+        
+        std::collections::HashSet::<_>::from_iter(vec![$($x),+].into_iter())
     }
 }

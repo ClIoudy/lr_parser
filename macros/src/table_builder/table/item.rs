@@ -1,6 +1,8 @@
+use std::fmt::Debug;
+
 use common::{Id, NonTerminal, Variant};
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq)]
 pub struct StateItem {
     position: usize,
     variant: Variant,
@@ -36,5 +38,12 @@ impl StateItem {
             variant: self.variant.clone(),
             position: self.position + 1,
         })
+    }
+}
+
+impl Debug for StateItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (before_dot, after_dot) = self.variant.values().split_at(self.position);
+        f.write_str(&format!("{:?} -> {:?}.{:?}", self.symbol(), before_dot, after_dot))
     }
 }

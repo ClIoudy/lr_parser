@@ -7,10 +7,11 @@ use crate::table_builder::table::{builder::TableBuilder, item::StateItem};
 use super::get_grammar;
 
 #[test] 
-fn test_closure() -> Result<(), Box<dyn std::error::Error>> {
-    let grammar = get_grammar()?;
+fn closure_test() -> Result<(), Box<dyn std::error::Error>> {
+    let mut grammar = get_grammar()?;
     
     let mut table_builder = TableBuilder::new(&grammar);
+
     {
         let symbol = "#S".into();
 
@@ -18,10 +19,10 @@ fn test_closure() -> Result<(), Box<dyn std::error::Error>> {
 
         let variants = grammar.rule(&symbol);
         let variants = variants.into_iter().map(|x| StateItem::new(x.clone())); 
+        
+        let expected_closure: HashSet<StateItem> = HashSet::from_iter(variants);
 
-        let mut expected_closure: HashSet<StateItem> = HashSet::from_iter(variants);
-
-        assert!(closure == expected_closure);
+        assert!(closure == expected_closure, "{:?} \n!= \n{:?}", closure, expected_closure);
     }
 
     {

@@ -61,7 +61,7 @@ impl From<String> for Terminal {
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub enum Id {
-    NonTerminal(NonTerminal),
-    Terminal(Terminal),
+    N(NonTerminal),
+    T(Terminal),
 }
 

@@ -14,7 +14,7 @@ use id_parse::IdParse;
 mod tests;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Grammar {
     rules: HashMap<NonTerminal, Vec<Variant>>,
 }
@@ -34,6 +34,10 @@ impl Grammar {
         }
 
         res.unwrap()
+    }
+
+    pub fn add_rule(&mut self, symbol: NonTerminal, rule: Vec<Variant>) -> Option<Vec<Variant>> {
+        self.rules.insert(symbol, rule)
     }
 
     pub fn all_rules(&self) -> &HashMap<NonTerminal, Vec<Variant>> {

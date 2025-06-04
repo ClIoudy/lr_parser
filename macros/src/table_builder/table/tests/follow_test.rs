@@ -1,6 +1,8 @@
 use std::error::Error;
 
-use crate::table_builder::table::{builder::TableBuilder, tests::get_grammar};
+use common::{Id, Terminal};
+
+use crate::{set, table_builder::table::{builder::TableBuilder, tests::get_grammar}, tests::utils};
 
 #[test]
 fn follow_test() -> Result<(), Box<dyn Error>> {
@@ -8,10 +10,24 @@ fn follow_test() -> Result<(), Box<dyn Error>> {
     let mut builder = TableBuilder::new(&grammar);
 
     {
-        let id = common::Id::NonTerminal("#S".into());
+        let id = "#S".into();
         let follow = builder.follow(&id);
 
-        panic!("{:?}", follow);
+        assert!(follow == set!{ Id::T(Terminal::EOF) });
+    }
+
+    {
+        let id = "B".into();
+        let follow = builder.follow(&id);
+
+        assert!(follow == set!(Id::T(Terminal::EOF)))
+    }
+
+    {
+        let id = "E".into();
+        let follow = builder.follow(&id);
+
+        assert!(follow == set!(Id::T(Terminal::Value("f".to_string()))))
     }
 
     Ok(())

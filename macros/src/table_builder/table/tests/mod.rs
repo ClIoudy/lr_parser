@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use common::NonTerminal;
 use proc_macro2::TokenStream;
 use quote::quote;
 
