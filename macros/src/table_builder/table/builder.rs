@@ -17,27 +17,7 @@ pub struct TableBuilder<'a> {
 }
 
 impl<'a> TableBuilder<'a> {
-    pub fn new(mut grammar: &'a Grammar) -> Self {
-
-        // let start_rules = grammar.rule_mut(&NonTerminal::start_symbol());
-
-        // for s in start_rules {
-        //     s.values_mut().push(Id::Terminal(Terminal::EOF));
-        // }
-
-        //-----
-
-        // let new_start_symbol = "#E".to_string();
-        // let name = "_".to_string();
-
-        // let values = vec![Id::NonTerminal(NonTerminal::start_symbol()), Id::Terminal(Terminal::EOF)];
-
-        // let id = VariantId::new(new_start_symbol.clone(), name, 2);
-
-        // let v = Variant::new(values, id);
-
-        // grammar.add_rule(new_start_symbol.into(), vec![v]);
-
+    pub fn new(grammar: &'a Grammar) -> Self {
         let mut f = HashSet::new();
         f.insert(Id::T(Terminal::EOF));
         let mut follows = HashMap::new();

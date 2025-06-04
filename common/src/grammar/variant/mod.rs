@@ -30,10 +30,6 @@ impl Variant {
     pub fn values(&self) -> &Vec<Id> {
         &self.values
     }
-
-    pub fn values_mut(&mut self) -> &mut Vec<Id> {
-        &mut self.values
-    }
     
     pub fn symbol(&self) -> &NonTerminal {
         self.id.symbol()
