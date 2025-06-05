@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use common::{NonTerminal, Variant};
 
-use crate::table_builder::table::{builder::TableBuilder, item::StateItem};
 
-use super::get_grammar;
+
+use super::{get_grammar, StateItem, TableBuilder};
 
 #[test] 
 fn closure_test() -> Result<(), Box<dyn std::error::Error>> {

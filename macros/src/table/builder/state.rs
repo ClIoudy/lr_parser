@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::table_builder::table::item::StateItem;
+use super::StateItem;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
 pub struct State {

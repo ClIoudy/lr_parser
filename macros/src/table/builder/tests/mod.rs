@@ -10,6 +10,7 @@ mod closure_test;
 mod follow_test;
 mod expand_test;
 
+use super::*;
 
 fn get_grammar() -> Result<Grammar, Box<dyn std::error::Error>> {
     let input = include_str!("grammar");

@@ -1,18 +1,18 @@
 use std::{collections::{HashMap, HashSet}, hash::Hash};
 
-use common::{grammar, Action, Id, NonTerminal, Terminal, Variant, VariantId};
+use common::{grammar, Action, Id, NonTerminal, StateId, Terminal, Variant, VariantId};
 
 
-use super::item::StateItem;
+use super::{StateItem, State, Table};
 
-use crate::{grammar::Grammar, table_builder::table::{state::State, Table}};
+use crate::grammar::Grammar;
 
 pub struct TableBuilder<'a> {
     grammar: &'a Grammar,
     closures: HashMap<NonTerminal, HashSet<StateItem>>,
     follows: HashMap<NonTerminal, HashSet<Id>>,
     states: HashMap<State, usize>,
-    actions: HashMap<State, HashMap<Id, Action>>
+    actions: HashMap<StateId, HashMap<Id, Action>>
 }
 
 impl<'a> TableBuilder<'a> {
@@ -153,7 +153,7 @@ impl<'a> TableBuilder<'a> {
             actions.insert(id, Action::Shift(state_nmbr));
         }
 
-        self.actions.insert(state.clone(), actions);
+        self.actions.insert(self.number(state), actions);
     }
 
     fn add_state(&mut self, state: State) {
@@ -187,7 +187,7 @@ impl<'a> TableBuilder<'a> {
     }    
 
     #[cfg(test)]
-    pub fn actions(&self) -> &HashMap<State, HashMap<Id, Action>> {
+    pub fn actions(&self) -> &HashMap<StateId, HashMap<Id, Action>> {
         &self.actions
     }
 }

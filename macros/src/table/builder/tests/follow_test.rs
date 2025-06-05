@@ -2,7 +2,8 @@ use std::error::Error;
 
 use common::{Id, NonTerminal, Terminal};
 
-use crate::{set, table_builder::table::{builder::TableBuilder, tests::get_grammar}, tests::utils};
+use super::{get_grammar, StateItem, TableBuilder};
+use crate::set;
 
 #[test]
 fn follow_test() -> Result<(), Box<dyn Error>> {

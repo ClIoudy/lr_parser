@@ -7,7 +7,7 @@ mod grammar;
 use grammar::Grammar;
 use syn::{parse::Parse, token::Token, Ident};
 
-mod table_builder;
+mod table;
 
 #[cfg(test)]
 mod tests;
