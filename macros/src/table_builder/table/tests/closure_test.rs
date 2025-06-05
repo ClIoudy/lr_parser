@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use common::Variant;
+use common::{NonTerminal, Variant};
 
 use crate::table_builder::table::{builder::TableBuilder, item::StateItem};
 
@@ -13,7 +13,7 @@ fn closure_test() -> Result<(), Box<dyn std::error::Error>> {
     let mut table_builder = TableBuilder::new(&grammar);
 
     {
-        let symbol = "#S".into();
+        let symbol = NonTerminal::start_symbol();
 
         let closure = table_builder.closure(&symbol);
 

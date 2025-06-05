@@ -3,4 +3,4 @@
 
 // }
 
-pub type StateId = u32;
+pub type StateId = usize;

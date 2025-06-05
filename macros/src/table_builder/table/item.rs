@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use common::{Id, NonTerminal, Variant};
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StateItem {
     position: usize,
     variant: Variant,
@@ -28,16 +28,15 @@ impl StateItem {
         &self.variant
     }
 
-    pub fn advance(&self) -> Option<Self> {
-        
-        if self.position + 1 >= self.variant.values().len() {
-            return None
-        }
-        
-        Some(Self {
+    pub fn advance(&self) -> Self {       
+        Self {
             variant: self.variant.clone(),
             position: self.position + 1,
-        })
+        }
+    }
+
+    pub fn is_finished(&self) -> bool {
+        self.position >= self.variant.values().len()
     }
 }
 

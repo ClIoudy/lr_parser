@@ -5,7 +5,7 @@ use common::{Id, NonTerminal, Variant};
 use syn::{parse::{discouraged::Speculative, Parse, ParseStream}, punctuated::Punctuated, token::Token, Ident, Token};
 
 mod rule;
-use rule::{VariantParser, StartRule};
+use rule::VariantParser;
 
 mod id_parse;
 use id_parse::IdParse;
@@ -43,11 +43,14 @@ impl Grammar {
     pub fn all_rules(&self) -> &HashMap<NonTerminal, Vec<Variant>> {
         &self.rules
     }
+
+    fn check_validity(&self) -> () {
+        assert!(self.rules.get(&NonTerminal::start_symbol()).is_some(), "Grammar must contain start symbol 'S'");
+    }
 }
 
 impl Parse for Grammar {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let start_rule = input.parse::<StartRule>()?.0;
         let mut rules = input.parse_terminated(VariantParser::parse, Token![;])?.into_iter().map(|x| x.0);
 
         let mut rules = rules.into_iter().fold(HashMap::new(), |mut acc: HashMap<NonTerminal, Vec<Variant>>, x| {
@@ -60,9 +63,9 @@ impl Parse for Grammar {
             acc
         });
 
-        rules.insert(NonTerminal::start_symbol(), start_rule);
-
-        Ok(Self::new(rules))
+        let res = Self::new(rules);
+        res.check_validity();
+        Ok(res)
     }
 }
 

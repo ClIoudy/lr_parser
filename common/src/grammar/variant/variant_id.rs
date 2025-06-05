@@ -1,7 +1,7 @@
 use crate::NonTerminal;
 
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantId {
     symbol: NonTerminal,
     name: NonTerminal,

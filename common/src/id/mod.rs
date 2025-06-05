@@ -1,6 +1,6 @@
 use std::fmt::Debug;
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NonTerminal {
     pub x: String,
 }
@@ -17,7 +17,7 @@ impl NonTerminal {
     }
     
     pub fn start_symbol() -> NonTerminal {
-        NonTerminal::new("#S".to_string())
+        NonTerminal::new("S".to_string())
     }
 }
 
@@ -49,7 +49,7 @@ impl PartialEq<str> for Terminal {
 }
 
 
-#[derive(Clone, Hash, PartialEq, Eq)]
+#[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Terminal {
     EOF,
     Value(String),
@@ -76,7 +76,7 @@ impl Debug for Terminal {
     }
 }
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Id {
     N(NonTerminal),
     T(Terminal),

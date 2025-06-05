@@ -5,7 +5,7 @@ pub use variant_id::VariantId;
 
 
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Variant {
     values: Vec<Id>,
     id: VariantId,

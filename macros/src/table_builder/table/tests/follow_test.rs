@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use common::{Id, Terminal};
+use common::{Id, NonTerminal, Terminal};
 
 use crate::{set, table_builder::table::{builder::TableBuilder, tests::get_grammar}, tests::utils};
 
@@ -10,24 +10,24 @@ fn follow_test() -> Result<(), Box<dyn Error>> {
     let mut builder = TableBuilder::new(&grammar);
 
     {
-        let id = "#S".into();
+        let id = NonTerminal::start_symbol();
         let follow = builder.follow(&id);
 
-        assert!(follow == set!{ Id::T(Terminal::EOF) });
+        assert!(follow == set! { Id::T(Terminal::EOF) });
     }
 
     {
         let id = "B".into();
         let follow = builder.follow(&id);
 
-        assert!(follow == set!(Id::T(Terminal::EOF)))
+        assert!(follow == set! { Id::T(Terminal::EOF) });
     }
 
     {
         let id = "E".into();
         let follow = builder.follow(&id);
 
-        assert!(follow == set!(Id::T(Terminal::Value("f".to_string()))))
+        assert!(follow == set! { Id::T(Terminal::Value("f".to_string())) });
     }
 
     Ok(())

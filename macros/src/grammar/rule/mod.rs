@@ -1,9 +1,5 @@
 use syn::{parse::Parse, Token};
-
-mod start_rule;
 use common::{Id, NonTerminal, Variant, VariantId};
-
-pub(super) use start_rule::StartRule;
 
 // mod variant_parser;
 // use variant_parser::VariantParser;

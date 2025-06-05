@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::table_builder::table::item::StateItem;
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
 pub struct State {
     items: Vec<StateItem>
 }

@@ -1,6 +1,6 @@
 use std::{collections::{HashMap, HashSet}, hash::Hash};
 
-use common::{Action, Id, NonTerminal, Terminal, Variant, VariantId};
+use common::{grammar, Action, Id, NonTerminal, Terminal, Variant, VariantId};
 
 
 use super::item::StateItem;
@@ -11,9 +11,8 @@ pub struct TableBuilder<'a> {
     grammar: &'a Grammar,
     closures: HashMap<NonTerminal, HashSet<StateItem>>,
     follows: HashMap<NonTerminal, HashSet<Id>>,
-    // actions: HashMap<State, HashMap<Id, Action>>,
-    shifts: HashMap<State, HashMap<Id, State>>,
-    reductions: HashMap<State, HashMap<Id, VariantId>>
+    states: HashMap<State, usize>,
+    actions: HashMap<State, HashMap<Id, Action>>
 }
 
 impl<'a> TableBuilder<'a> {
@@ -25,10 +24,10 @@ impl<'a> TableBuilder<'a> {
 
         Self {
             grammar,
-            closures: HashMap::new(),
             follows,
-            shifts: HashMap::new(),
-            reductions: HashMap::new(),
+            closures: HashMap::new(),
+            states: HashMap::new(),
+            actions: HashMap::new(),
         }
     }
 
@@ -111,83 +110,86 @@ impl<'a> TableBuilder<'a> {
     }
 
     pub fn expand(&mut self, state: &State) {
-        if self.shifts.contains_key(state) {
+        if self.states.contains_key(state) {
             return;
         }
 
-        self.shifts.insert(state.clone(), HashMap::new());
+        self.add_state(state.clone());
+        
         let mut reductions = HashMap::new();
-        let mut new_states = HashMap::new();
+        let mut transitions = HashMap::new();
 
         for item in state.items() {
-            if let Some(k) = dbg!(item.get()) {
+            if let Some(k) = item.get() {
                 // SHIFT
                 let new_state = self.make_state(k, item);
-                extend_set_map(&mut new_states, k, new_state);
+                extend_set_map(&mut transitions, k, new_state);
             } else {
                 // REDUCTION
                 for id in self.follow(item.symbol()) {
                     let v = item.variant().id().clone();
-
-                    if reductions.insert(id.clone(), v).is_some() {
+                    if reductions.insert(id.clone(), Action::Reduce(v)).is_some() {
                         panic!("Doulbe reduction error");
                     }
                 }
             }
         }
 
-        let mut transitions = new_states.into_iter().map(|(id, state_items)| (id, State::new(state_items))).collect();
+        // collect as vec of states
+        // states only created here in order to allow expanding states while going trough items
+        // (necessary when state s has multiple transitions with the same key to different states. 
+        //  Then those two states need to be merged. Therefore states only created here after all merges completed)
+        let mut transitions: Vec<(_, _)> = transitions.into_iter().map(|(id, state_items)| (id, State::new(state_items))).collect();
 
-        for (id, new_state) in &transitions {
-            self.expand(new_state);
+        // important for tests and makes analyzing tables much easier 
+        // (order lost due to hashmap and now restored by sorts)
+        transitions.sort();
+
+        let mut actions = reductions;
+
+        for (id, new_state) in transitions {
+            self.expand(&new_state);
+            let state_nmbr = self.number(&new_state);
+            actions.insert(id, Action::Shift(state_nmbr));
         }
 
-        self.reductions.insert(state.clone(), reductions);
-        self.shifts.insert(state.clone(), transitions);
+        self.actions.insert(state.clone(), actions);
+    }
+
+    fn add_state(&mut self, state: State) {
+        self.states.insert(state, self.states.len());
+    }
+
+    fn number(&self, state: &State) -> usize {
+        *self.states.get(state).unwrap()
     }
 
     fn make_state(&mut self, k: &Id, item: &StateItem) -> HashSet<StateItem> {
         // state: item + closure of new item
         let advanced = item.advance();
-        
-        if advanced.is_none() {
-            return HashSet::new();
-        }
-        
+
         let mut new_state = HashSet::new();
-        new_state.insert(item.advance().unwrap());
     
-        if let Id::N(r) = k {
+        if let Some(Id::N(r)) = advanced.get() {
             new_state.extend(self.closure(&r));
         }
         
+        new_state.insert(advanced);
+
         new_state
     }
 
     pub fn build(mut self) -> Table {
-        todo!("number states");
-        todo!("construct actions");
-        todo!("construct expected");
+
+        let expected = todo!("construct 'expected'");
         
-        let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
-        self.expand(&start_state);
-
-        // Table::new(expected, actions);
-        todo!()
-        // Table::new()
-    }
+        Table::new(expected, self.actions)
+    }    
 
     #[cfg(test)]
-    pub fn shifts(&self) -> &HashMap<State, HashMap<Id, State>> {
-        &self.shifts
+    pub fn actions(&self) -> &HashMap<State, HashMap<Id, Action>> {
+        &self.actions
     }
-
-    #[cfg(test)]
-    pub fn reductions(&self) -> &HashMap<State, HashMap<Id, VariantId>> {
-        &self.reductions
-    }
-
-    
 }
 
 fn find_all<T>(iter: impl Iterator<Item=T>, predicate: impl Fn(T) -> bool) -> Vec<usize> {

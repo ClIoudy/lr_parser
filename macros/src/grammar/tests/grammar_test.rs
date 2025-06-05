@@ -1,17 +1,15 @@
 use std::error::Error;
 
-use common::{Id, Terminal};
+use common::{Id, NonTerminal, Terminal};
 use quote::quote;
 
 use crate::{grammar::Grammar, tests::utils::VariantCompare};
 
 #[test]
 pub fn test_grammar() -> Result<(), Box<dyn Error>> {
-    let pound = quote! {#};
-
     let input = quote! {
-        #pound S: A -> "a", B;
-        #pound S: B -> "b", A;
+        S: A -> "a", B;
+        S: B -> "b", A;
         A: A -> "a";
         B: B -> "b";
         B: C -> "c";
@@ -22,14 +20,16 @@ pub fn test_grammar() -> Result<(), Box<dyn Error>> {
     assert!(grammar.all_rules().len() == 3);
 
     {
-        let s = grammar.rule(&"#S".into());
+        let s = grammar.rule(&NonTerminal::start_symbol());
         assert!(s.len() == 2);
+        
         let s_a = &s[0];
-
+        assert!(*s_a.symbol() == NonTerminal::start_symbol());
         let cmp = VariantCompare::new("A", &["a", "B"]);
         assert!(*s_a == cmp);
 
         let s_b = &s[1];
+        assert!(*s_b.symbol() == NonTerminal::start_symbol());
         let cmp = VariantCompare::new("B", &["b", "A"]);
         assert!(*s_b == cmp);
     }
