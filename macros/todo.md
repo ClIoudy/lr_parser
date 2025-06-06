@@ -1,0 +1,16 @@
+- [ ] grammar parsing error handling (e.g. not a valid graph/mentioned but missing definition of non-terminal)
+- [ ] extend as match tokenstream
+  - [ ] match state to hashset
+  - [ ] default: None
+- [ ] actions as match tokenstreams
+  - [ ] match state
+  - [ ] match id as NT or T
+  - [ ] match NT string or T string to action
+  - [ ] default: None
+- [ ] build_rule as match tokenstreams
+  - [ ] match symbol
+  - [ ] match name 
+  - [ ] return #symbol_ident::#name_ident(#elements)
+  - [ ] where elements is variant_id.length() amount of Self::pop_downcast(&mut elements)?
+  - [ ] where Self::pop_downcast\<T>(elements: &mut Vec\<Box\<dyn Any>>) -> T { elements.pop()?.downcast()? }
+- [ ] maybe use BTreeMap/-Set instead of partial-ord and sort() hacks for states?

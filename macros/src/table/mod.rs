@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use common::{Action, Id, StateId, Terminal};
 use proc_macro::TokenStream;
@@ -7,17 +7,19 @@ use quote::quote;
 use crate::grammar::Grammar;
 
 mod builder;
+mod to_tokens;
 
+#[derive(Debug, Clone)]
 pub struct Table {
     // possible expected tokens given a state and a lookahead
-    expected: HashMap<StateId, HashMap<Id, Vec<Terminal>>>,
+    expected: HashMap<StateId, HashSet<Terminal>>,
 
     // action given a state and id
     actions: HashMap<StateId, HashMap<Id, Action>>,
 }
 
 impl Table {
-    pub fn new(expected: HashMap<StateId, HashMap<Id, Vec<Terminal>>>, actions: HashMap<StateId, HashMap<Id, Action>>) -> Self {
+    pub fn new(expected: HashMap<StateId, HashSet<Terminal>>, actions: HashMap<StateId, HashMap<Id, Action>>) -> Self {
         Self {
             expected,
             actions

@@ -13,6 +13,7 @@ pub struct Variant {
 
 impl Variant {
     pub fn new(values: Vec<Id>, id: VariantId) -> Self {
+        assert!(values.len() == id.length());
         Self {
             values,
             id
@@ -33,5 +34,9 @@ impl Variant {
     
     pub fn symbol(&self) -> &NonTerminal {
         self.id.symbol()
+    }
+
+    pub fn length(&self) -> usize {
+        self.id.length()
     }
 }

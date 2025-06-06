@@ -6,7 +6,7 @@ use quote::quote;
 use crate::{grammar::Grammar, tests::utils::VariantCompare};
 
 #[test]
-pub fn test_grammar() -> Result<(), Box<dyn Error>> {
+pub fn test() -> Result<(), Box<dyn Error>> {
     let input = quote! {
         S: A -> "a", B;
         S: B -> "b", A;

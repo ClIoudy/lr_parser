@@ -1,0 +1,18 @@
+{
+    "files.exclude": {
+        ".gitattributes": true,
+        "use case.md": true,
+        "todo.md": true,
+        "settings.json": true,
+        "parse.md": true,
+        "Cargo.toml": true,
+        "Cargo.lock": true,
+        ".gitignore": true,
+        "target": true,
+        "macros": true,
+        "src": true,
+        "common/src/table": true,
+        "common/src/grammar": true,
+        ".vscode": true
+    }
+}

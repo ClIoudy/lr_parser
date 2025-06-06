@@ -25,14 +25,14 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
 
     pub fn parse<S: 'static>(mut self) -> Result<Box<S>, ParseError> {
         loop {
+            if self.result_stack.len() == 1 && self.result_stack[0].is::<S>() {
+                break;
+            }
+
             let lookahead = self.next();
             let state = self.state_machine.state();
             
-            if self.table.is_end_state(state) && self.result_stack.len() == 1 {
-                break;
-            }
-            
-            let action = self.table.action(state, &Id::Terminal(lookahead.id()));
+            let action = self.table.action(state, &Id::T(lookahead.id()));
 
             if action.is_none() {
                 return Err(ParseError::expected());
@@ -82,7 +82,7 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
         let new_rule = self.table.build_rule(variant, children);
 
         // advance state
-        let transition = self.table.action(self.state_machine.state(), &Id::NonTerminal(new_rule.id()));
+        let transition = self.table.action(self.state_machine.state(), &Id::N(new_rule.id()));
 
         match transition {
             Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),

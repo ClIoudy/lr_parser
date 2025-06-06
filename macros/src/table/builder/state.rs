@@ -9,8 +9,11 @@ pub struct State {
 
 impl State {
     pub fn new(items: HashSet<StateItem>) -> Self {
+        let mut items: Vec<StateItem> = items.into_iter().collect();
+        items.sort();
+        
         Self {
-            items: items.into_iter().collect()
+            items,
         }
     }
     

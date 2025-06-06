@@ -12,7 +12,10 @@ pub struct TableBuilder<'a> {
     closures: HashMap<NonTerminal, HashSet<StateItem>>,
     follows: HashMap<NonTerminal, HashSet<Id>>,
     states: HashMap<State, usize>,
-    actions: HashMap<StateId, HashMap<Id, Action>>
+    #[cfg(test)]
+    states_inverse: HashMap<usize, State>,
+    actions: HashMap<StateId, HashMap<Id, Action>>,
+    expected: HashMap<Id, HashSet<Terminal>>,
 }
 
 impl<'a> TableBuilder<'a> {
@@ -27,7 +30,10 @@ impl<'a> TableBuilder<'a> {
             follows,
             closures: HashMap::new(),
             states: HashMap::new(),
+            #[cfg(test)]
+            states_inverse: HashMap::new(),
             actions: HashMap::new(),
+            expected: HashMap::new(),
         }
     }
 
@@ -157,7 +163,11 @@ impl<'a> TableBuilder<'a> {
     }
 
     fn add_state(&mut self, state: State) {
-        self.states.insert(state, self.states.len());
+        let l = self.states.len();
+        #[cfg(test)]
+        self.states_inverse.insert(l, state.clone());
+
+        self.states.insert(state, l);
     }
 
     fn number(&self, state: &State) -> usize {
@@ -181,10 +191,55 @@ impl<'a> TableBuilder<'a> {
 
     pub fn build(mut self) -> Table {
 
-        let expected = todo!("construct 'expected'");
+        let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
+        self.expand(&start_state);
+
+        // state -> expected ids;
+        let expected = self
+            .actions
+            .clone()
+            .into_iter()
+            .map(|(s, map)| (
+                s,
+                map
+                    .keys()
+                    .fold(HashSet::new(), |mut acc, k| {
+                        acc.extend(self.expected(&k));
+                        acc
+                    })
+                ))
+            .collect();
         
         Table::new(expected, self.actions)
     }    
+
+    fn expected(&mut self, value: &Id) ->  HashSet<Terminal> {
+        if let Some(res) = self.expected.get(value) {
+            return res.clone();
+        }
+
+        let res = match value {
+            Id::T(t) => HashSet::from_iter(std::iter::once(t.clone())),
+            Id::N(n) => {
+                let mut res = HashSet::new();
+                                
+                for v in self.grammar.rule(&n) {
+                    let first = v.values().first().unwrap();
+                    res.extend(self.expected(first));
+                }
+
+                res
+            }
+        };
+
+        self.expected.insert(value.clone(), res.clone());
+        res
+    }
+
+    #[cfg(test)]
+    pub fn state_items(&self, state_id: &usize) -> &State {
+        self.states_inverse.get(state_id).unwrap()
+    }
 
     #[cfg(test)]
     pub fn actions(&self) -> &HashMap<StateId, HashMap<Id, Action>> {

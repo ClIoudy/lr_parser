@@ -10,6 +10,8 @@ mod closure_test;
 mod follow_test;
 mod expand_test;
 
+mod build_test;
+
 use super::*;
 
 fn get_grammar() -> Result<Grammar, Box<dyn std::error::Error>> {
