@@ -6,7 +6,8 @@ pub use non_terminal::NonTerminal;
 mod terminal;
 pub use terminal::Terminal;
 
-
+use quote::{quote, ToTokens};
+use proc_macro2::TokenStream;
 
 
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -21,5 +22,14 @@ impl Debug for Id {
             Id::T(x) => x.fmt(f),
             Id::N(x) => x.fmt(f),
         }
+    }
+}
+
+impl ToTokens for Id {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(match self {
+            Self::T(t) => quote! { Id::T(#t) },
+            Self::N(n) => quote! { Id::N(#n) },
+        });
     }
 }

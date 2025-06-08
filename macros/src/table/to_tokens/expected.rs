@@ -1,23 +1,18 @@
+use std::collections::{HashMap, HashSet};
+
+use common::Terminal;
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 
-use crate::table::Table;
+use super::reprenstations::{MapRepr, SetRepr};
 
-pub fn expected(table: &Table) -> TokenStream {
-    // let mut res = vec![];
+pub fn expected(expected: HashMap<usize, HashSet<Terminal>>) -> TokenStream {
+    let expected: std::collections::HashMap<usize, SetRepr<Terminal>> = expected
+        .into_iter()
+        .map(|(k, v)| (k, SetRepr(v)))
+        .collect();
+    
+    let expected = MapRepr::new(expected, "state_id".to_string());
 
-    // for (state, answer) in &table.expected {
-    //     let answer = answer.into_iter();
-    //     res.push(quote! {
-    //         #state => set! { #(#answer),* }
-    //     });
-    // }
-
-    // quote! {
-    //     match state {
-
-    //     }
-    // }
-
-    TokenStream::new()
+    expected.into_token_stream()
 }

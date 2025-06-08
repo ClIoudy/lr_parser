@@ -1,4 +1,4 @@
-use std::any::Any;
+use std::{any::Any, marker::PhantomData};
 
 use crate::Token;
 
@@ -6,20 +6,20 @@ use common::*;
 
 use super::{error::ParseError, StateMachine};
 
-pub struct ParseInstance<'a, T: TableTrait> {
+pub struct ParseInstance<T: TableTrait> {
     state_machine: StateMachine,
-    table: &'a T,
     result_stack: Vec<Box<dyn Any>>,
     to_parse: Vec<Token>,
+    _phantom: PhantomData<T>,
 }
 
-impl<'a, T: TableTrait> ParseInstance<'a, T> {
-    pub fn new(table: &'a T, to_parse: Vec<Token>) -> Self {
+impl<T: TableTrait> ParseInstance<T> {
+    pub fn new(to_parse: Vec<Token>) -> Self {
         Self {
-            state_machine: StateMachine::new(table),
-            table,
+            state_machine: StateMachine::new::<T>(),
             to_parse,
             result_stack: vec![],
+            _phantom: PhantomData,
         }
     }
 
@@ -32,7 +32,7 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
             let lookahead = self.next();
             let state = self.state_machine.state();
             
-            let action = self.table.action(state, &Id::T(lookahead.id()));
+            let action = T::action(state, &Id::T(lookahead.id()));
 
             if action.is_none() {
                 return Err(ParseError::expected());
@@ -79,10 +79,10 @@ impl<'a, T: TableTrait> ParseInstance<'a, T> {
         let children = self.result_stack.split_off(n - l);
 
         // create new rule
-        let new_rule = self.table.build_rule(variant, children);
+        let new_rule = T::build_rule(variant, children);
 
         // advance state
-        let transition = self.table.action(self.state_machine.state(), &Id::N(new_rule.id()));
+        let transition = T::action(self.state_machine.state(), &Id::N(new_rule.id()));
 
         match transition {
             Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),

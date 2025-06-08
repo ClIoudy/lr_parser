@@ -10,9 +10,5 @@
         ".gitignore": true,
         "target": true,
         "macros": true,
-        "src": true,
-        "common/src/table": true,
-        "common/src/grammar": true,
-        ".vscode": true
     }
 }

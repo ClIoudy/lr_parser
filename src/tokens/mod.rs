@@ -9,7 +9,7 @@ impl Token {
     pub fn id(&self) -> Terminal {
         match self {
             Self::EOF => Terminal::EOF,
-            Self::Value(x) => Terminal::Value(x.to_string()),
+            Self::Value(x) => Terminal::Labeld(x.to_string()),
         };
 
         todo!()

@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use common::{Action, Id, StateId, Terminal};
+use common::{Action, Id, NonTerminal, StateId, Terminal, Variant};
 use proc_macro::TokenStream;
 use quote::quote;
 
@@ -10,19 +10,23 @@ mod builder;
 mod to_tokens;
 
 #[derive(Debug, Clone)]
-pub struct Table {
+pub struct TableMacroInfo {
     // possible expected tokens given a state and a lookahead
     expected: HashMap<StateId, HashSet<Terminal>>,
 
     // action given a state and id
     actions: HashMap<StateId, HashMap<Id, Action>>,
+
+    // rules for build_rules()
+    rules: HashMap<NonTerminal, Vec<Variant>>,
 }
 
-impl Table {
-    pub fn new(expected: HashMap<StateId, HashSet<Terminal>>, actions: HashMap<StateId, HashMap<Id, Action>>) -> Self {
+impl TableMacroInfo {
+    pub fn new(expected: HashMap<StateId, HashSet<Terminal>>, actions: HashMap<StateId, HashMap<Id, Action>>, rules: HashMap<NonTerminal, Vec<Variant>>) -> Self {
         Self {
             expected,
-            actions
+            actions,
+            rules
         }
     }
 }

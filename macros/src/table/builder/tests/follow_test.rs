@@ -28,7 +28,7 @@ fn follow_test() -> Result<(), Box<dyn Error>> {
         let id = "E".into();
         let follow = builder.follow(&id);
 
-        assert!(follow == set! { Id::T(Terminal::Value("f".to_string())) });
+        assert!(follow == set! { Id::T(Terminal::Labeld("f".to_string())) });
     }
 
     Ok(())

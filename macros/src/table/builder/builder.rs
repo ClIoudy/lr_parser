@@ -3,7 +3,7 @@ use std::{collections::{HashMap, HashSet}, hash::Hash};
 use common::{grammar, Action, Id, NonTerminal, StateId, Terminal, Variant, VariantId};
 
 
-use super::{StateItem, State, Table};
+use super::{StateItem, State, TableMacroInfo};
 
 use crate::grammar::Grammar;
 
@@ -189,7 +189,7 @@ impl<'a> TableBuilder<'a> {
         new_state
     }
 
-    pub fn build(mut self) -> Table {
+    pub fn build(mut self) -> TableMacroInfo {
 
         let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
         self.expand(&start_state);
@@ -210,7 +210,12 @@ impl<'a> TableBuilder<'a> {
                 ))
             .collect();
         
-        Table::new(expected, self.actions)
+        let rules = self.grammar.all_rules()
+                .into_iter()
+                .map(|(k, v)| (k.clone(), v.clone()))
+                .collect();
+
+        TableMacroInfo::new(expected, self.actions, rules)
     }    
 
     fn expected(&mut self, value: &Id) ->  HashSet<Terminal> {

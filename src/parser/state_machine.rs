@@ -5,9 +5,9 @@ pub struct StateMachine {
 }
 
 impl StateMachine {
-    pub fn new<T: TableTrait>(table: &T) -> Self {
+    pub fn new<T: TableTrait>() -> Self {
         Self {
-            state_history: vec![*table.start_state()],
+            state_history: vec![T::start_state()],
         }
     }
 

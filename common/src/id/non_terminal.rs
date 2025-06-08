@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use quote::{quote, ToTokens};
 
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NonTerminal {
@@ -37,5 +38,13 @@ impl From<String> for NonTerminal {
 impl PartialEq<str> for NonTerminal {
     fn eq(&self, other: &str) -> bool {
         &self.x == other
+    }
+}
+
+
+impl ToTokens for NonTerminal {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let x = &self.x;
+        tokens.extend(quote! { NonTerminal::new(#x.to_string()) });
     }
 }

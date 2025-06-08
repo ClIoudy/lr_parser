@@ -9,6 +9,10 @@ pub(crate) use tokens::*;
 #[cfg(test)]
 mod tests;
 
+struct ABC<T> {
+    x: T,
+}
+
 enum S {
     A(Box<A>, String),
     S(Box<S>, String)

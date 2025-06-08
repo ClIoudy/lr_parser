@@ -1,4 +1,5 @@
 use crate::NonTerminal;
+use quote::{ToTokens, quote};
 
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
@@ -29,3 +30,16 @@ impl VariantId {
         &self.symbol
     }
 }
+
+impl ToTokens for VariantId {
+    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+        let symbol = &self.symbol.x;
+        let name = &self.name.x;
+        let length = self.length;
+
+        tokens.extend(quote! {
+            VariantId::new(#symbol.to_string(), #name.to_string(), #length)     
+        });
+    }
+}
+

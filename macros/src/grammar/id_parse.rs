@@ -8,7 +8,7 @@ impl Parse for IdParse {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let id = if input.peek(LitStr) {
             Id::T(
-                common::Terminal::Value(
+                common::Terminal::Labeld(
                     input.parse::<LitStr>()?.value()                        
                 )
             )

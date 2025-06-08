@@ -1,3 +1,4 @@
+## essential
 - [ ] grammar parsing error handling (e.g. not a valid graph/mentioned but missing definition of non-terminal)
 - [ ] extend as match tokenstream
   - [ ] match state to hashset
@@ -14,3 +15,9 @@
   - [ ] where elements is variant_id.length() amount of Self::pop_downcast(&mut elements)?
   - [ ] where Self::pop_downcast\<T>(elements: &mut Vec\<Box\<dyn Any>>) -> T { elements.pop()?.downcast()? }
 - [ ] maybe use BTreeMap/-Set instead of partial-ord and sort() hacks for states?
+
+## later
+- [ ] allow for named fields on variants (all fields need names then)
+  -> struct-like enum variant
+- [ ] regex-like features like * signaling Vec fields in enum
+  

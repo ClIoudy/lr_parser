@@ -25,7 +25,7 @@ impl PartialEq<VariantCompare> for Variant {
                 Id::N(non_terminal) => &non_terminal.x,
                 Id::T(t) => match t {
                     Terminal::EOF => panic!("Cannot compare EOF"),
-                    Terminal::Value(x) => x.as_str()
+                    Terminal::Labeld(x) => x.as_str()
                 }
             }
         }).collect();

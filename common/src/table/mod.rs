@@ -1,11 +1,12 @@
-use std::any::Any;
-use crate::{Action, Id, RuleTrait, VariantId};
+use std::{any::Any, collections::HashSet};
+use crate::{Action, Id, RuleTrait, Terminal, VariantId};
 
 mod state;
 pub use state::StateId;
 
 pub trait TableTrait {
-    fn start_state(&self) -> &StateId;
-    fn action(&self, state: &StateId, token: &Id) -> Option<Action>;
-    fn build_rule(&self, variant: VariantId, children: Vec<Box<dyn Any>>) -> Box<dyn RuleTrait>;
+    fn start_state() -> StateId;
+    fn action(state: &StateId, token: &Id) -> Option<Action>;
+    fn build_rule(variant: VariantId, children: Vec<Box<dyn Any>>) -> Box<dyn RuleTrait>;
+    fn expected(state: &StateId) -> HashSet<Terminal>;
 }

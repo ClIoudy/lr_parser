@@ -7,3 +7,5 @@ edition = "2021"
 crate-type = ["lib"]
 
 [dependencies]
+quote = "*"
+proc-macro2 = "*"

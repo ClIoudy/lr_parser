@@ -1,18 +1,17 @@
-// pub trait Quotable {
+use std::collections::HashMap;
 
-// }
+use proc_macro2::{TokenStream, Ident, Span};
+use quote::quote;
+use quote::ToTokens;
 
-use std::collections::{BTreeMap, HashMap};
 
-use quote::{quote, ToTokens, TokenStreamExt};
-use proc_macro2::*;
-
-struct MatchTokenRepr<K, V> {
+#[derive(Debug, Clone)]
+pub struct MapRepr<K, V> {
     map: HashMap<K, V>,
     match_variable_name: String,
 }
 
-impl<K, V> MatchTokenRepr<K, V> {
+impl<K, V> MapRepr<K, V> {
     pub fn new(map: HashMap<K, V>, match_variable_name: String) -> Self {
         Self {
             map,
@@ -21,9 +20,9 @@ impl<K, V> MatchTokenRepr<K, V> {
     }
 }
 
-impl<K: ToTokens + Ord, V: ToTokens + Clone> ToTokens for MatchTokenRepr<K, V> {
+impl<K: ToTokens, V: ToTokens + Clone> ToTokens for MapRepr<K, V> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let var_name = &self.match_variable_name;
+        let var_name = Ident::new(&self.match_variable_name, Span::call_site());
 
 
         let k: Vec<_> = self.map.keys().map(|k| quote! { #k }).collect();
@@ -31,7 +30,7 @@ impl<K: ToTokens + Ord, V: ToTokens + Clone> ToTokens for MatchTokenRepr<K, V> {
         
         tokens.extend(quote! {
             match #var_name {
-                #( #k => println!("{}", #v), )*
+                #( #k => #v),*
             }
         });
         
