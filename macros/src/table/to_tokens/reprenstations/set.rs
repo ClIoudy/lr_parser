@@ -10,7 +10,7 @@ impl<T: ToTokens + Eq + Hash + Debug> ToTokens for SetRepr<T> {
         let set = self.0.iter();
 
         let e = quote! {
-            std::collections::HashSet::from_iter(vec![#(#set),*].into_iter())
+            std::collections::HashSet::from_iter([#(#set),*].into_iter())
         };
 
         tokens.extend(e);

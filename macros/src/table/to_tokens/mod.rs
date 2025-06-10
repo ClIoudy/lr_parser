@@ -1,10 +1,8 @@
 use common::TableTrait;
 
-mod expected;
-mod actions;
-mod build_rule;
+pub mod build_fns;
+use proc_macro2::TokenStream;
 
-#[cfg(test)]
-mod tests;
+use crate::table::TableMacroInfo;
 
 pub mod reprenstations;

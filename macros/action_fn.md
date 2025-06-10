@@ -1,0 +1,3 @@
+- match state
+    - match against Id::T(Terminal::EOF) or Id::T(Terminal::Labeld(label)) or Id::N(nt)
+    - for label and nt add "if ... == ..." clause

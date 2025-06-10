@@ -24,7 +24,7 @@ impl Variant {
         &self.id
     }
 
-    pub fn name(&self) -> &NonTerminal {
+    pub fn name(&self) -> &String {
         self.id.name()
     }
 

@@ -22,8 +22,8 @@ impl Debug for Action {
 impl ToTokens for Action {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let e = match self {
-            Action::Reduce(x) => quote! { Action::Reduce(#x) },
-            Action::Shift(x) => quote! { Action::Shift(#x) },
+            Action::Reduce(x) => quote! { lr_parser::Action::Reduce(#x) },
+            Action::Shift(x) => quote! { lr_parser::Action::Shift(#x) },
         };
 
         tokens.extend(e);

@@ -210,9 +210,17 @@ impl<'a> TableBuilder<'a> {
                 ))
             .collect();
         
+        // let rules = self.grammar.all_rules()
+        //         .into_iter()
+        //         .map(|(k, v)| (k.clone(), v.into_iter().map.clone()))
+        //         .collect();
+
         let rules = self.grammar.all_rules()
                 .into_iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
+                .map(|(k, v)| (
+                    k.clone(), 
+                    v.into_iter().map(|v| v.id().clone()).collect()
+                ))
                 .collect();
 
         TableMacroInfo::new(expected, self.actions, rules)

@@ -6,6 +6,9 @@ mod tokens;
 pub(crate) use tokens::Token;
 pub(crate) use tokens::*;
 
+pub use common::*;
+pub use macros::build_parser;
+
 #[cfg(test)]
 mod tests;
 
@@ -34,3 +37,9 @@ enum A {
 // table
 // - indexed by id (token AND rule ids possible)
 // 
+
+
+
+
+
+

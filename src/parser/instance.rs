@@ -78,11 +78,20 @@ impl<T: TableTrait> ParseInstance<T> {
         // get children
         let children = self.result_stack.split_off(n - l);
 
+        // get symbol for transitioning further from it
+        let id = variant.symbol().clone();
+
         // create new rule
         let new_rule = T::build_rule(variant, children);
 
+        if new_rule.is_none() {
+            unreachable!("Couldn't build rule");
+        }
+
+        let new_rule = new_rule.unwrap();
+
         // advance state
-        let transition = T::action(self.state_machine.state(), &Id::N(new_rule.id()));
+        let transition = T::action(self.state_machine.state(), &Id::N(id));
 
         match transition {
             Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),

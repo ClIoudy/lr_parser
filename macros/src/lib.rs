@@ -8,6 +8,9 @@ mod grammar;
 use grammar::Grammar;
 use syn::{parse::Parse, token::Token, Ident};
 
+use crate::enums::enums;
+mod enums;
+
 mod table;
 
 #[cfg(test)]
@@ -28,9 +31,13 @@ mod tests;
 pub fn build_parser(input: TokenStream) -> TokenStream {
     let grammar = syn::parse_macro_input!(input as Grammar);
 
-    // let table = table_builder::table(grammar);
-    TokenStream::new()
-    // table
+    let mut res = enums(&grammar);
+    res.extend(
+        table::table(&grammar)
+    );
+    
+    res.into()
+    // TokenStream::new()
 }
 
 pub (crate) trait ParseShortcuts {

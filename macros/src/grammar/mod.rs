@@ -45,7 +45,7 @@ impl Grammar {
     }
 
     fn check_validity(&self) -> () {
-        // assert!(self.rules.get(&NonTerminal::start_symbol()).is_some(), "Grammar must contain start symbol 'S'");
+        assert!(self.rules.get(&NonTerminal::start_symbol()).is_some(), "Grammar must contain start symbol 'S'");
     }
 }
 

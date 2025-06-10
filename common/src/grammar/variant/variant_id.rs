@@ -5,7 +5,7 @@ use quote::{ToTokens, quote};
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantId {
     symbol: NonTerminal,
-    name: NonTerminal,
+    name: String,
     length: usize,
 }
 
@@ -13,7 +13,7 @@ impl VariantId {
     pub fn new(symbol: String, name: String, length: usize) -> Self {
         Self {
             symbol: NonTerminal::new(symbol),
-            name: NonTerminal::new(name),
+            name: name,
             length,
         }
     }
@@ -22,7 +22,7 @@ impl VariantId {
         self.length
     }
     
-    pub fn name(&self) -> &NonTerminal {
+    pub fn name(&self) -> &String {
         &self.name
     }
 
@@ -34,11 +34,11 @@ impl VariantId {
 impl ToTokens for VariantId {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let symbol = &self.symbol.x;
-        let name = &self.name.x;
+        let name = &self.name;
         let length = self.length;
 
         tokens.extend(quote! {
-            VariantId::new(#symbol.to_string(), #name.to_string(), #length)     
+            lr_parser::VariantId::new(#symbol.to_string(), #name.to_string(), #length)     
         });
     }
 }

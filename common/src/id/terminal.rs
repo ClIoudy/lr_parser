@@ -43,8 +43,8 @@ impl Debug for Terminal {
 impl ToTokens for Terminal {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
         let t = match &self {
-            Self::EOF => quote! { Terminal::EOF },
-            Self::Labeld(x) => quote! { Terminal::labeld(#x.to_string()) }, 
+            Self::EOF => quote! { lr_parser::Terminal::EOF },
+            Self::Labeld(x) => quote! { lr_parser::Terminal::Labeld(#x.to_string()) }, 
         };
 
         tokens.extend(t);

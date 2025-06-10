@@ -28,8 +28,8 @@ impl Debug for Id {
 impl ToTokens for Id {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.extend(match self {
-            Self::T(t) => quote! { Id::T(#t) },
-            Self::N(n) => quote! { Id::N(#n) },
+            Self::T(t) => quote! { lr_parser::Id::T(#t) },
+            Self::N(n) => quote! { lr_parser::Id::N(#n) },
         });
     }
 }

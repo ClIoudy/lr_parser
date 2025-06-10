@@ -7,6 +7,6 @@ pub use state::StateId;
 pub trait TableTrait {
     fn start_state() -> StateId;
     fn action(state: &StateId, token: &Id) -> Option<Action>;
-    fn build_rule(variant: VariantId, children: Vec<Box<dyn Any>>) -> Box<dyn RuleTrait>;
-    fn expected(state: &StateId) -> HashSet<Terminal>;
+    fn build_rule(variant: VariantId, children: Vec<Box<dyn Any>>) -> Option<Box<dyn Any>>;
+    fn expected(state: &StateId) -> Option<HashSet<Terminal>>;
 }

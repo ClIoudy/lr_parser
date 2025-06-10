@@ -18,7 +18,7 @@ impl VariantCompare {
 
 impl PartialEq<VariantCompare> for Variant {
     fn eq(&self, other: &VariantCompare) -> bool {
-        let name_eq = &self.name().x == other.name;
+        let name_eq = self.name() == other.name;
 
         let values: Vec<_> = self.values().iter().map(|id| {
             match id {
