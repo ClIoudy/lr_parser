@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use common::{Id, NonTerminal, Terminal};
+use common::{NonTerminal};
 use quote::quote;
 
 use crate::{grammar::Grammar, tests::utils::VariantCompare};

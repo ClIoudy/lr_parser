@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use crate::ParseShortcuts;
 
-use common::{Id, NonTerminal, Variant};
-use syn::{parse::{discouraged::Speculative, Parse, ParseStream}, punctuated::Punctuated, token::Token, Ident, Token};
+use common::{NonTerminal, Variant};
+use syn::{parse::{Parse, ParseStream}, punctuated::Punctuated, token::Token, Ident, Token};
 
 mod rule;
 use rule::VariantParser;
@@ -36,10 +36,6 @@ impl Grammar {
         res.unwrap()
     }
 
-    pub fn add_rule(&mut self, symbol: NonTerminal, rule: Vec<Variant>) -> Option<Vec<Variant>> {
-        self.rules.insert(symbol, rule)
-    }
-
     pub fn all_rules(&self) -> &HashMap<NonTerminal, Vec<Variant>> {
         &self.rules
     }
@@ -51,9 +47,9 @@ impl Grammar {
 
 impl Parse for Grammar {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-        let mut rules = input.parse_terminated(VariantParser::parse, Token![;])?.into_iter().map(|x| x.0);
+        let rules = input.parse_terminated(VariantParser::parse, Token![;])?.into_iter().map(|x| x.0);
 
-        let mut rules = rules.into_iter().fold(HashMap::new(), |mut acc: HashMap<NonTerminal, Vec<Variant>>, x| {
+        let rules = rules.into_iter().fold(HashMap::new(), |mut acc: HashMap<NonTerminal, Vec<Variant>>, x| {
             if let Some(entry) = acc.get_mut(x.symbol()) {
                 entry.push(x)
             } else {
@@ -76,15 +72,5 @@ impl ParseShortcuts for ParseStream<'_> {
 
     fn punctuated_vec<T: Parse, P: Parse + Token>(&self) -> syn::Result<Vec<T>> {
         Ok(Punctuated::<T, P>::parse_separated_nonempty(&self)?.into_iter().collect())
-    }
-
-    fn expect(&self, expected: &str) -> syn::Result<()> {
-        let x = self.ident()?;
-
-        if x != expected {
-            Err(self.error(format!("expected ident {expected}, found: {x}")))
-        } else {
-            Ok(())
-        }
     }
 }

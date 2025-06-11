@@ -1,5 +1,5 @@
 use syn::{parse::Parse, Token};
-use common::{Id, NonTerminal, Variant, VariantId};
+use common::{Id, Variant, VariantId};
 
 // mod variant_parser;
 // use variant_parser::VariantParser;

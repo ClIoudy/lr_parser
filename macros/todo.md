@@ -1,5 +1,6 @@
 ## essential
 - [ ] grammar parsing error handling (e.g. not a valid graph/mentioned but missing definition of non-terminal)
+- [ ] alphabet (for use in lexer)
 - [x] default for map repr
 - [x] expected as match tokenstream
 - [x] actions as match tokenstreams

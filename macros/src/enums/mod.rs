@@ -41,7 +41,7 @@ fn build_variant(variant: &Variant) -> TokenStream {
                     Box<#symbol>
                 }
             },
-            Id::T(t) => quote! { Box<String> },
+            Id::T(_) => quote! { Box<String> },
         }
     }).collect::<Vec<_>>();
 

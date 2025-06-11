@@ -34,10 +34,6 @@ impl StateItem {
             position: self.position + 1,
         }
     }
-
-    pub fn is_finished(&self) -> bool {
-        self.position >= self.variant.values().len()
-    }
 }
 
 impl Debug for StateItem {

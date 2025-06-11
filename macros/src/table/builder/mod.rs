@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use common::{Action, Id, Terminal};
 use item::StateItem;
 
 mod builder;

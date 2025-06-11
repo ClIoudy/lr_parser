@@ -1,4 +1,4 @@
-use std::{any::Any, marker::PhantomData};
+use std::{any::Any, collections::HashSet, marker::PhantomData};
 
 use crate::Token;
 
@@ -14,7 +14,10 @@ pub struct ParseInstance<T: TableTrait> {
 }
 
 impl<T: TableTrait> ParseInstance<T> {
-    pub fn new(to_parse: Vec<Token>) -> Self {
+    
+    pub fn new(mut to_parse: Vec<Token>) -> Self {
+        to_parse.reverse();
+
         Self {
             state_machine: StateMachine::new::<T>(),
             to_parse,
@@ -23,19 +26,22 @@ impl<T: TableTrait> ParseInstance<T> {
         }
     }
 
-    pub fn parse<S: 'static>(mut self) -> Result<Box<S>, ParseError> {
+    pub fn parse(mut self) -> Result<Box<T::StartSymbol>, ParseError> {
         loop {
-            if self.result_stack.len() == 1 && self.result_stack[0].is::<S>() {
+
+            if self.result_stack.len() == 1 && self.result_stack[0].is::<T::StartSymbol>() {
                 break;
             }
-
+            
             let lookahead = self.next();
             let state = self.state_machine.state();
             
-            let action = T::action(state, &Id::T(lookahead.id()));
-
+            dbg!(state);
+            let action = T::action(state, &Id::T(dbg!(lookahead.id())));
+            dbg!(&action);
+            println!();
             if action.is_none() {
-                return Err(ParseError::expected());
+                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), lookahead));
             }
 
             match action.unwrap() {
@@ -56,7 +62,7 @@ impl<T: TableTrait> ParseInstance<T> {
         self
             .to_parse
             .pop()
-            .unwrap_or(Token::EOF)
+            .unwrap_or(Token::eof())
     }
 
     fn shift(&mut self, new_state: StateId, lookahead: Token) {
@@ -64,7 +70,8 @@ impl<T: TableTrait> ParseInstance<T> {
 
         match lookahead {
             Token::EOF => (),
-            Token::Value(x) => self.result_stack.push(Box::new(x)),
+            // Token::Value(_) => self.result_stack.push(Box::new(lookahead.value().to_string())),
+            Token::Value { label, value }  => self.result_stack.push(Box::new(dbg!(value.clone()))),
         }
     }
 
@@ -76,26 +83,28 @@ impl<T: TableTrait> ParseInstance<T> {
         self.state_machine.revert(l);
 
         // get children
-        let children = self.result_stack.split_off(n - l);
-
+        let mut children = self.result_stack.split_off(n - l);
+        children.reverse();
         // get symbol for transitioning further from it
         let id = variant.symbol().clone();
 
         // create new rule
-        let new_rule = T::build_rule(variant, children);
+        let new_rule = T::build_rule(dbg!(variant), dbg!(children));
 
         if new_rule.is_none() {
+            dbg!(self.state_machine.state());
             unreachable!("Couldn't build rule");
         }
 
-        let new_rule = new_rule.unwrap();
+        self.result_stack.push(new_rule.unwrap());
 
         // advance state
         let transition = T::action(self.state_machine.state(), &Id::N(id));
 
         match transition {
             Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),
-            _ => unreachable!("Table should always ensure that there is a transition after a reduction.")
+            // _ => unreachable!("Table should always ensure that there is a transition after a reduction.")
+            _ => (),
         }
     }
 }

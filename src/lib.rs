@@ -1,6 +1,8 @@
 #![allow(unused)]
 
 mod parser;
+pub use parser::Parser;
+
 mod tokens;
 
 pub(crate) use tokens::Token;
@@ -8,6 +10,8 @@ pub(crate) use tokens::*;
 
 pub use common::*;
 pub use macros::build_parser;
+
+pub mod lexer;
 
 #[cfg(test)]
 mod tests;

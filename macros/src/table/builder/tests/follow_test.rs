@@ -1,12 +1,14 @@
-use std::error::Error;
+use std::{error::Error, str::FromStr};
 
-use common::{Id, NonTerminal, Terminal};
+use common::{grammar, Id, NonTerminal, Terminal};
+use proc_macro2::TokenStream;
+use syn::parse::Parse;
 
-use super::{get_grammar, StateItem, TableBuilder};
-use crate::set;
+use super::{get_grammar, TableBuilder};
+use crate::{grammar::Grammar, set, tests::TestRet};
 
 #[test]
-fn follow_test() -> Result<(), Box<dyn Error>> {
+fn follow_test_1() -> TestRet {
     let grammar = get_grammar()?;
     let mut builder = TableBuilder::new(&grammar);
 
@@ -29,6 +31,24 @@ fn follow_test() -> Result<(), Box<dyn Error>> {
         let follow = builder.follow(&id);
 
         assert!(follow == set! { Id::T(Terminal::Labeld("f".to_string())) });
+    }
+
+    Ok(())
+}
+
+#[test]
+fn follow_test_2() -> TestRet {
+    // let grammar = get_grammar();
+    let input = "S: A -> S, \"a\"; S: B -> \"b\"";
+    let input = TokenStream::from_str(input)?;
+    let grammar = syn::parse2(input)?;
+
+    let mut builder = TableBuilder::new(&grammar);
+
+    {
+        let id = "S".into();
+        let follow = builder.follow(&id);
+        panic!("{:?}", follow);
     }
 
     Ok(())

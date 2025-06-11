@@ -8,7 +8,7 @@ use super::{get_grammar, StateItem, TableBuilder};
 
 #[test] 
 fn closure_test() -> Result<(), Box<dyn std::error::Error>> {
-    let mut grammar = get_grammar()?;
+    let grammar = get_grammar()?;
     
     let mut table_builder = TableBuilder::new(&grammar);
 

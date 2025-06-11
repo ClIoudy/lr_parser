@@ -2,10 +2,8 @@
     "files.exclude": {
         ".gitattributes": true,
         "use case.md": true,
-        "todo.md": true,
         "settings.json": true,
         "parse.md": true,
-        "Cargo.toml": true,
         "Cargo.lock": true,
         ".gitignore": true,
         "target": true

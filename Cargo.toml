@@ -9,3 +9,4 @@ crate-type = ["lib"]
 [dependencies]
 macros = { path = "macros" }
 common = { path = "common" }
+regex = "*"

@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use proc_macro2::{TokenStream, Ident, Span};
+use proc_macro2::TokenStream;
 use quote::quote;
 use quote::ToTokens;
 

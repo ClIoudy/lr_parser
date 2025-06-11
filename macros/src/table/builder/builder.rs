@@ -1,6 +1,6 @@
 use std::{collections::{HashMap, HashSet}, hash::Hash};
 
-use common::{grammar, Action, Id, NonTerminal, StateId, Terminal, Variant, VariantId};
+use common::{Action, Id, NonTerminal, StateId, Terminal};
 
 
 use super::{StateItem, State, TableMacroInfo};
@@ -78,7 +78,7 @@ impl<'a> TableBuilder<'a> {
         if let Some(res) = self.follows.get(id) {
             return res.clone();
         }
-
+        
         self.follows.insert(id.clone(), HashSet::new());
         let mut res = HashSet::new();
 
@@ -86,6 +86,7 @@ impl<'a> TableBuilder<'a> {
 
         for (rule_id, variants) in self.grammar.all_rules() {
             for v in variants {
+                println!("inspecting rule: {:?}", v);
                 let values = v.values();
 
                 let occurences = find_all(v.values().iter(), |x| {
@@ -128,7 +129,7 @@ impl<'a> TableBuilder<'a> {
         for item in state.items() {
             if let Some(k) = item.get() {
                 // SHIFT
-                let new_state = self.make_state(k, item);
+                let new_state = self.make_state(item);
                 extend_set_map(&mut transitions, k, new_state);
             } else {
                 // REDUCTION
@@ -164,6 +165,7 @@ impl<'a> TableBuilder<'a> {
 
     fn add_state(&mut self, state: State) {
         let l = self.states.len();
+
         #[cfg(test)]
         self.states_inverse.insert(l, state.clone());
 
@@ -174,7 +176,7 @@ impl<'a> TableBuilder<'a> {
         *self.states.get(state).unwrap()
     }
 
-    fn make_state(&mut self, k: &Id, item: &StateItem) -> HashSet<StateItem> {
+    fn make_state(&mut self, item: &StateItem) -> HashSet<StateItem> {
         // state: item + closure of new item
         let advanced = item.advance();
 
@@ -190,10 +192,9 @@ impl<'a> TableBuilder<'a> {
     }
 
     pub fn build(mut self) -> TableMacroInfo {
-
         let start_state = State::new(self.closure(&NonTerminal::start_symbol()));
         self.expand(&start_state);
-
+        
         // state -> expected ids;
         let expected = self
             .actions
@@ -201,41 +202,28 @@ impl<'a> TableBuilder<'a> {
             .into_iter()
             .map(|(s, map)| (
                 s,
-                map
-                    .keys()
-                    .fold(HashSet::new(), |mut acc, k| {
+                map.keys().fold(HashSet::new(), |mut acc, k| {
                         acc.extend(self.expected(&k));
                         acc
                     })
                 ))
             .collect();
-        
-        // let rules = self.grammar.all_rules()
-        //         .into_iter()
-        //         .map(|(k, v)| (k.clone(), v.into_iter().map.clone()))
-        //         .collect();
 
-        let rules = self.grammar.all_rules()
-                .into_iter()
-                .map(|(k, v)| (
-                    k.clone(), 
-                    v.into_iter().map(|v| v.id().clone()).collect()
-                ))
-                .collect();
-
-        TableMacroInfo::new(expected, self.actions, rules)
+        TableMacroInfo::new(expected, self.actions)
     }    
 
     fn expected(&mut self, value: &Id) ->  HashSet<Terminal> {
         if let Some(res) = self.expected.get(value) {
             return res.clone();
         }
+        
+        self.expected.insert(value.clone(), HashSet::new());
 
         let res = match value {
             Id::T(t) => HashSet::from_iter(std::iter::once(t.clone())),
             Id::N(n) => {
                 let mut res = HashSet::new();
-                                
+
                 for v in self.grammar.rule(&n) {
                     let first = v.values().first().unwrap();
                     res.extend(self.expected(first));
@@ -247,16 +235,6 @@ impl<'a> TableBuilder<'a> {
 
         self.expected.insert(value.clone(), res.clone());
         res
-    }
-
-    #[cfg(test)]
-    pub fn state_items(&self, state_id: &usize) -> &State {
-        self.states_inverse.get(state_id).unwrap()
-    }
-
-    #[cfg(test)]
-    pub fn actions(&self) -> &HashMap<StateId, HashMap<Id, Action>> {
-        &self.actions
     }
 }
 

@@ -1,9 +1,6 @@
 #![feature(assert_matches)]
-#![allow(unused)]
-#![warn(clippy::todo)]
 
 use proc_macro::TokenStream;
-use quote::quote;
 mod grammar;
 use grammar::Grammar;
 use syn::{parse::Parse, token::Token, Ident};
@@ -43,5 +40,4 @@ pub fn build_parser(input: TokenStream) -> TokenStream {
 pub (crate) trait ParseShortcuts {
     fn ident(&self) -> syn::Result<Ident>;
     fn punctuated_vec<T: Parse, P: Parse + Token>(&self) -> syn::Result<Vec<T>>;
-    fn expect(&self, expected: &str) -> syn::Result<()>; 
 }

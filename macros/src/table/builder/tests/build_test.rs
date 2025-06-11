@@ -2,7 +2,7 @@ use std::{assert_matches::assert_matches, collections::{HashMap, HashSet}, fmt::
 
 use common::{Action, Id, NonTerminal, StateId, Terminal};
 
-use crate::{set, table::builder::{builder::TableBuilder, state::{self, State}, tests::get_grammar}, tests::TestRet};
+use crate::{table::builder::{builder::TableBuilder, state::State, tests::get_grammar}, tests::TestRet};
 
 #[test]
 pub fn test() -> TestRet {
