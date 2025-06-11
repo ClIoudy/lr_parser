@@ -77,7 +77,7 @@ pub fn calculator() -> Result<(), Box<dyn Error>> {
     lexer.try_add("*")?;
     lexer.try_add("/")?;
 
-    
+    todo!();
 
     Ok(())
 }
