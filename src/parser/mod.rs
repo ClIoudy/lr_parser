@@ -27,6 +27,6 @@ impl<T: TableTrait> Parser<T> {
 
 
     pub fn parse(&self, to_parse: Vec<Token>) -> Result<Box<T::StartSymbol>, ParseError> {
-        ParseInstance::<T>::new(to_parse).parse()
+        ParseInstance::<T>::new(to_parse)?.parse()
     }
 }

@@ -164,7 +164,13 @@ impl<'a> TableBuilder<'a> {
         for (id, new_state) in transitions {
             self.expand(&new_state);
             let state_nmbr = self.number(&new_state);
-            actions.insert(id, Action::Shift(state_nmbr));
+            // actions.insert(id, Action::Shift(state_nmbr));
+            let action = match id {
+                Id::N(_) => Action::Goto(state_nmbr),
+                Id::T(_) => Action::Shift(state_nmbr),
+            };
+
+            actions.insert(id, action);
         }
 
         self.actions.insert(self.number(state), actions);

@@ -32,7 +32,7 @@ impl TableMacroInfo {
 
 pub fn table(grammar: &Grammar) -> TokenStream {
     let table = TableBuilder::new(grammar).build();
-
+    
     let start_state = 0usize;
     let build_rule_fn = build_rule_fn(grammar.all_rules());
     let expected_fn = expected_fn(table.expected);

@@ -7,7 +7,8 @@ use quote::{ToTokens, quote};
 #[derive(Clone, PartialEq, Eq)]
 pub enum Action {
     Shift(StateId),
-    Reduce(VariantId)
+    Goto(StateId),
+    Reduce(VariantId),
 }
 
 impl Debug for Action {
@@ -15,6 +16,7 @@ impl Debug for Action {
         match self {
             Self::Shift(x) => f.write_fmt(format_args!("Shift({})", x)),
             Self::Reduce(x) => f.write_fmt(format_args!("Reduce({:?}: {:?})", x.symbol(), x.name())),
+            Self::Goto(x) => f.write_fmt(format_args!("Goto({})", x)),
         }
     }
 }
@@ -24,6 +26,7 @@ impl ToTokens for Action {
         let e = match self {
             Action::Reduce(x) => quote! { lr_parser::Action::Reduce(#x) },
             Action::Shift(x) => quote! { lr_parser::Action::Shift(#x) },
+            Action::Goto(x) => quote! { lr_parser::Action::Goto(#x) },
         };
 
         tokens.extend(e);

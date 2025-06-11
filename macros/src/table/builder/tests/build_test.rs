@@ -1,8 +1,9 @@
-use std::{assert_matches::assert_matches, collections::{HashMap, HashSet}, fmt::Debug};
+use std::{assert_matches::assert_matches, collections::{HashMap, HashSet}, fmt::Debug, str::FromStr};
 
 use common::{Action, Id, NonTerminal, StateId, Terminal};
+use proc_macro2::TokenStream;
 
-use crate::{table::builder::{builder::TableBuilder, state::State, tests::get_grammar}, tests::TestRet};
+use crate::{grammar::Grammar, table::builder::{builder::TableBuilder, state::State, tests::get_grammar}, tests::TestRet};
 
 #[test]
 pub fn test() -> TestRet {

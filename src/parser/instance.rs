@@ -1,4 +1,4 @@
-use std::{any::Any, collections::HashSet, marker::PhantomData};
+use std::{any::Any, collections::HashSet, marker::PhantomData, mem::replace};
 
 use crate::Token;
 
@@ -11,43 +11,53 @@ pub struct ParseInstance<T: TableTrait> {
     result_stack: Vec<Box<dyn Any>>,
     to_parse: Vec<Token>,
     _phantom: PhantomData<T>,
+    debug_result_stack: Vec<String>,
+    next_id: Id,
 }
 
 impl<T: TableTrait> ParseInstance<T> {
     
-    pub fn new(mut to_parse: Vec<Token>) -> Self {
+    pub fn new(mut to_parse: Vec<Token>) -> Result<Self, ParseError> {
         to_parse.reverse();
+        
+        let next_id = Id::T(to_parse.last().unwrap_or(&Token::EOF).id());
 
-        Self {
+        Ok(Self {
             state_machine: StateMachine::new::<T>(),
             to_parse,
             result_stack: vec![],
             _phantom: PhantomData,
-        }
+            debug_result_stack: vec![],
+            next_id
+        })
     }
 
     pub fn parse(mut self) -> Result<Box<T::StartSymbol>, ParseError> {
         loop {
-
-            if self.result_stack.len() == 1 && self.result_stack[0].is::<T::StartSymbol>() {
+            if self.result_stack.len() == 1 && self.to_parse.len() == 0 && self.result_stack[0].is::<T::StartSymbol>() {
                 break;
             }
+
             
-            let lookahead = self.next();
+            let id = &self.next_id;
             let state = self.state_machine.state();
             
-            dbg!(state);
-            let action = T::action(state, &Id::T(dbg!(lookahead.id())));
-            dbg!(&action);
-            println!();
+            let action = T::action(state, id);
+
             if action.is_none() {
-                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), lookahead));
+                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), &self.to_parse.pop().unwrap()));
             }
 
             match action.unwrap() {
-                Action::Shift(new_state) => self.shift(new_state, lookahead),
+                Action::Shift(next_state) => self.shift(next_state),
                 Action::Reduce(reduction) => self.reduce(reduction),
+                Action::Goto(next_state) => {
+                    self.state_machine.advance(next_state);
+                    let next_id = self.to_parse.last().unwrap_or(&Token::EOF).id();
+                    self.next_id = Id::T(next_id);
+                }
             };
+
         }
 
         Ok(self
@@ -57,21 +67,31 @@ impl<T: TableTrait> ParseInstance<T> {
         )
     }
 
-    /// return next element to parse or special EOF (end of file) symbol
+    /// returns the current token and advances next_id
     fn next(&mut self) -> Token {
-        self
+        let res = self
             .to_parse
             .pop()
-            .unwrap_or(Token::eof())
+            .unwrap_or(Token::eof());
+        
+        let next_id = self.to_parse.last().unwrap_or(&Token::EOF).id();
+        self.next_id = Id::T(next_id);
+
+        res
     }
 
-    fn shift(&mut self, new_state: StateId, lookahead: Token) {
-        self.state_machine.advance(new_state);
+    fn shift(&mut self, next_state: StateId) {
+        self.state_machine.advance(next_state);
+        
+        let token = self.next();
 
-        match lookahead {
+        match token {
             Token::EOF => (),
-            // Token::Value(_) => self.result_stack.push(Box::new(lookahead.value().to_string())),
-            Token::Value { label, value }  => self.result_stack.push(Box::new(dbg!(value.clone()))),
+            Token::Value { label, value }  => {
+                self.debug_result_stack.push(value.clone());
+
+                self.result_stack.push(Box::new(value))
+            },
         }
     }
 
@@ -82,29 +102,25 @@ impl<T: TableTrait> ParseInstance<T> {
         // go back to state where rule originated
         self.state_machine.revert(l);
 
+        self.debug_result_stack.truncate(n - l);
         // get children
         let mut children = self.result_stack.split_off(n - l);
         children.reverse();
         // get symbol for transitioning further from it
         let id = variant.symbol().clone();
 
+        self.debug_result_stack.push(variant.symbol().clone().x);
+
         // create new rule
-        let new_rule = T::build_rule(dbg!(variant), dbg!(children));
+        let new_rule = T::build_rule(variant, children);
 
         if new_rule.is_none() {
-            dbg!(self.state_machine.state());
+            self.state_machine.state();
             unreachable!("Couldn't build rule");
         }
 
         self.result_stack.push(new_rule.unwrap());
 
-        // advance state
-        let transition = T::action(self.state_machine.state(), &Id::N(id));
-
-        match transition {
-            Some(Action::Shift(new_state)) => self.state_machine.advance(new_state),
-            // _ => unreachable!("Table should always ensure that there is a transition after a reduction.")
-            _ => (),
-        }
+        self.next_id = Id::N(id);
     }
 }

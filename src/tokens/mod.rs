@@ -1,6 +1,8 @@
+use std::fmt::Debug;
+
 use common::Terminal;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum Token {
     EOF,
     Value { label: String, value: String }
@@ -23,3 +25,11 @@ impl Token {
     }
 }
 
+impl Debug for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Token::EOF => f.write_str("$"),
+            Token::Value { label, value } => f.write_fmt(format_args!("\"{}\"", value))
+        }
+    }
+}

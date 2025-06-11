@@ -55,16 +55,13 @@ pub fn recursive_on_first_value() -> Result<(), Box<dyn Error>> {
 
     let parser = Parser::<Table>::new();
     let parse = parser.parse(lexer.lex("baa")?)?;
-
-    // let a = Box::new("a".to_string());
-    // let b = Box::new("b".to_string());
+    let a = Box::new("a".to_string());
+    let b = Box::new("b".to_string());
     
-    // let s_a = |s| S::A(Box::new(s), a.clone());
-    // let res = s_a(s_a(S::B(b)));
+    let s_a = |s| S::A(Box::new(s), a.clone());
+    let res = s_a(s_a(S::B(b)));
 
-    // assert_eq!(*parse, res);
-    // let res = S::A(Box::new(S::A(Box::new(S::B(Box::new("b".to_string()))), Box::new("a".to_string()))), Box::new("a".to_string()))
-    // assert_eq!(res, )
+    assert_eq!(*parse, res);
 
     Ok(())
 }
@@ -79,6 +76,8 @@ pub fn calculator() -> Result<(), Box<dyn Error>> {
     lexer.try_add("-")?;
     lexer.try_add("*")?;
     lexer.try_add("/")?;
+
+    
 
     Ok(())
 }
