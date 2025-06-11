@@ -20,21 +20,29 @@ pub struct TableBuilder<'a> {
 
 impl<'a> TableBuilder<'a> {
     pub fn new(grammar: &'a Grammar) -> Self {
-        let mut f = HashSet::new();
-        f.insert(Id::T(Terminal::EOF));
-        let mut follows = HashMap::new();
-        follows.insert(NonTerminal::start_symbol(), f);
-
-        Self {
+        let mut res = Self {
             grammar,
-            follows,
+            follows: HashMap::new(),
             closures: HashMap::new(),
             states: HashMap::new(),
             #[cfg(test)]
             states_inverse: HashMap::new(),
             actions: HashMap::new(),
             expected: HashMap::new(),
-        }
+        };
+
+        let s = NonTerminal::start_symbol();
+
+        // get the start follow and update it with $
+        let mut start_follow = res.follow(&s);
+        start_follow.insert(Id::T(Terminal::EOF));
+
+        // reset follows
+        res.follows = HashMap::new();
+        // and make sure it has only the updated start follow 
+        res.follows.insert(s, start_follow);
+
+        res
     }
 
     pub fn closure(&mut self, id: &NonTerminal) -> HashSet<StateItem> {
@@ -86,7 +94,6 @@ impl<'a> TableBuilder<'a> {
 
         for (rule_id, variants) in self.grammar.all_rules() {
             for v in variants {
-                println!("inspecting rule: {:?}", v);
                 let values = v.values();
 
                 let occurences = find_all(v.values().iter(), |x| {

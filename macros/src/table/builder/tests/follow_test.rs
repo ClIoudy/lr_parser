@@ -1,11 +1,10 @@
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
-use common::{grammar, Id, NonTerminal, Terminal};
+use common::{Id, NonTerminal, Terminal};
 use proc_macro2::TokenStream;
-use syn::parse::Parse;
 
 use super::{get_grammar, TableBuilder};
-use crate::{grammar::Grammar, set, tests::TestRet};
+use crate::{set, tests::TestRet};
 
 #[test]
 fn follow_test_1() -> TestRet {
@@ -16,21 +15,21 @@ fn follow_test_1() -> TestRet {
         let id = NonTerminal::start_symbol();
         let follow = builder.follow(&id);
 
-        assert!(follow == set! { Id::T(Terminal::EOF) });
+        assert_eq!(follow, set! { Id::T(Terminal::EOF) });
     }
 
     {
         let id = "B".into();
         let follow = builder.follow(&id);
 
-        assert!(follow == set! { Id::T(Terminal::EOF) });
+        assert_eq!(follow, set! { Id::T(Terminal::EOF) });
     }
 
     {
         let id = "E".into();
         let follow = builder.follow(&id);
 
-        assert!(follow == set! { Id::T(Terminal::Labeld("f".to_string())) });
+        assert_eq!(follow, set! { Id::T(Terminal::Labeld("f".to_string())) });
     }
 
     Ok(())
@@ -48,7 +47,8 @@ fn follow_test_2() -> TestRet {
     {
         let id = "S".into();
         let follow = builder.follow(&id);
-        panic!("{:?}", follow);
+        
+        assert_eq!(follow, set!{ Id::T(Terminal::EOF), Id::T("a".into()) })
     }
 
     Ok(())
