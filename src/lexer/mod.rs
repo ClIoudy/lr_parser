@@ -5,8 +5,9 @@ pub use pattern::Pattern;
 use regex::Match;
 
 mod error;
+pub use error::LexError;
 
-use crate::{lexer::error::LexError, Token};
+use crate::Token;
 
 #[cfg(test)]
 mod test;
@@ -16,34 +17,34 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(patterns: HashSet<Pattern>) -> Self {
-        Self {
-            patterns
-        }
-    }
+    // pub fn new(patterns: HashSet<Pattern>) -> Self {
+    //     Self {
+    //         patterns
+    //     }
+    // }
 
-    pub fn from_alphabet(alphabet: HashSet<&str>) -> Result<Self, regex::Error> {
+    pub fn from_alphabet(alphabet: impl IntoIterator<Item = &'static str>) -> Result<Self, regex::Error> {
         let patterns: Result<HashSet<Pattern>, regex::Error> = alphabet
             .into_iter()
             .map(|x| Pattern::new(x))
             .collect();
 
-        Ok(Self::new(patterns?))
+        Ok(Self { patterns: patterns? })
     }
 
-    pub fn empty() -> Self {
-        Self {
-            patterns: HashSet::new(),
-        }
-    }
+    // pub fn empty() -> Self {
+    //     Self {
+    //         patterns: HashSet::new(),
+    //     }
+    // }
 
-    pub fn add(&mut self, pattern: impl Into<Pattern>) -> bool {
-        self.patterns.insert(pattern.into())
-    }
+    // pub fn add(&mut self, pattern: impl Into<Pattern>) -> bool {
+    //     self.patterns.insert(pattern.into())
+    // }
 
-    pub fn try_add<T: TryInto<Pattern>>(&mut self, pattern: T) -> Result<bool, T::Error>{
-        Ok(self.patterns.insert(pattern.try_into()?))
-    }
+    // pub fn try_add<T: TryInto<Pattern>>(&mut self, pattern: T) -> Result<bool, T::Error>{
+    //     Ok(self.patterns.insert(pattern.try_into()?))
+    // }
 
     /// Lexes/tokenizes a given string based on the lexer's token-types/patterns. 
     /// If successful, returns the tokenized vector of the found token types.

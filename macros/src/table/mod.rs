@@ -54,15 +54,11 @@ pub fn table(grammar: &Grammar) -> TokenStream {
     let alphabet_repr = SetRepr(&alphabet);
 
     quote! {
+        use lr_parser::TableTrait;
+
         struct Table;
 
-        impl Table {
-            pub fn alphabet() -> std::collections::HashSet<&'static str> {
-                #alphabet_repr
-            }
-        }
-
-        impl lr_parser::TableTrait for Table {
+        impl TableTrait for Table {
             type StartSymbol = S;
             fn start_state() -> usize {
                 #start_state
@@ -78,6 +74,10 @@ pub fn table(grammar: &Grammar) -> TokenStream {
         
             fn build_rule(variant: lr_parser::VariantId, mut children: Vec<Box<dyn std::any::Any>>) -> Option<Box<dyn std::any::Any>> {
                 #build_rule_fn
+            }
+
+            fn alphabet() -> std::collections::HashSet<&'static str> {
+                #alphabet_repr
             }
         }
     }

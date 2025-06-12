@@ -14,10 +14,6 @@ impl ParseError {
             message: format!("expected one of the labels {:?} but found: {:?}", expected_keys, found)
         }
     }
-
-    pub fn empty_parse() -> Self {
-        Self { message: format!("empty string passed to parser") }
-    }
 }
 
 impl Debug for ParseError {

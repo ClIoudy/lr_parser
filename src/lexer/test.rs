@@ -4,9 +4,8 @@ use crate::{lexer::Lexer, Token};
 
 #[test]
 fn test_lexer() -> Result<(), Box<dyn Error>>{
-    let mut lexer = Lexer::empty();
-    lexer.try_add("[0-9]*")?;
-    lexer.try_add("[a-z]*")?;
+    let lexer = Lexer::from_alphabet(["[0-9]*", "[a-z]*"])?;
+
 
     let sample = "abc901a";
     let lex = lexer.lex(sample)?;

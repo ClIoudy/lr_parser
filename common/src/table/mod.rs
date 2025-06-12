@@ -10,4 +10,5 @@ pub trait TableTrait {
     fn action(state: &StateId, token: &Id) -> Option<Action>;
     fn build_rule(variant: VariantId, children: Vec<Box<dyn Any>>) -> Option<Box<dyn Any>>;
     fn expected(state: &StateId) -> Option<HashSet<Terminal>>;
+    fn alphabet() -> std::collections::HashSet<&'static str>;
 }
