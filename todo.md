@@ -1,2 +1,4 @@
 - [ ] rustc overflows its stack when chaining start symbols
 - [ ] see macros todo
+- [ ] inline lexer 
+  - lex inside parse, remove Lexer struct

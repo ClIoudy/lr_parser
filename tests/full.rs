@@ -65,7 +65,29 @@ pub fn recursive_on_first_value() -> Result<(), Box<dyn Error>> {
 #[test]
 pub fn recursive_first_with_multiple_choices() -> Result<(), Box<dyn Error>> {
 
+    build_parser! {
+        S: A -> S, "a";
+        S: B -> S, "b";
+        S: C -> "c";
+    }
 
+    let lexer = Lexer::from_alphabet(Table::alphabet())?;
+    Parser::parse(lexer.lex("caba")?)?;
 
     Ok(())
+}
+
+#[test]
+fn regex_test() -> Result<(), Box<dyn Error>> {
+    build_parser! {
+        S: Number -> "[0-9]*";
+    }
+
+    let lexer = Lexer::from_alphabet(Table::alphabet())?;
+    let parse = Parser::parse(lexer.lex("123")?)?;
+
+    assert_eq!(*parse, S::Number(Box::new("123".to_string())));
+
+    Ok(())
+
 }
