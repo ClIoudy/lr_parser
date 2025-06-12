@@ -22,6 +22,15 @@ impl Lexer {
         }
     }
 
+    pub fn from_alphabet(alphabet: HashSet<&str>) -> Result<Self, regex::Error> {
+        let patterns: Result<HashSet<Pattern>, regex::Error> = alphabet
+            .into_iter()
+            .map(|x| Pattern::new(x))
+            .collect();
+
+        Ok(Self::new(patterns?))
+    }
+
     pub fn empty() -> Self {
         Self {
             patterns: HashSet::new(),

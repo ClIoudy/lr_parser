@@ -4,7 +4,7 @@ use common::{Action, Id, StateId, Terminal};
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::grammar::Grammar;
+use crate::{grammar::Grammar, table::to_tokens::reprenstations::SetRepr};
 
 mod builder;
 use builder::TableBuilder;
@@ -35,12 +35,32 @@ pub fn table(grammar: &Grammar) -> TokenStream {
     
     let start_state = 0usize;
     let build_rule_fn = build_rule_fn(grammar.all_rules());
-    let expected_fn = expected_fn(table.expected);
+    let expected_fn = expected_fn(&table.expected);
     let action_fn = action_fn(table.actions);
 
+    let alphabet = table.expected
+        .into_iter()
+        .fold(HashSet::new(), |mut acc, (_, set)| {
+            acc.extend(set);
+            acc
+        })
+        .into_iter()
+        .filter_map(|x| match x {
+            Terminal::EOF => None,
+            Terminal::Labeld(label) => Some(label)
+        })
+        .collect();
+
+    let alphabet_repr = SetRepr(&alphabet);
 
     quote! {
         struct Table;
+
+        impl Table {
+            pub fn alphabet() -> std::collections::HashSet<&'static str> {
+                #alphabet_repr
+            }
+        }
 
         impl lr_parser::TableTrait for Table {
             type StartSymbol = S;

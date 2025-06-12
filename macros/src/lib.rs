@@ -13,6 +13,8 @@ mod table;
 #[cfg(test)]
 mod tests;
 
+mod parser;
+
 // #[cfg(test)]
 // pub use tests::test_quoting;
 
@@ -29,12 +31,12 @@ pub fn build_parser(input: TokenStream) -> TokenStream {
     let grammar = syn::parse_macro_input!(input as Grammar);
 
     let mut res = enums(&grammar);
-    res.extend(
-        table::table(&grammar)
-    );
     
+    res.extend(table::table(&grammar));
+    
+    res.extend(parser::parser_struct_tokens());
+
     res.into()
-    // TokenStream::new()
 }
 
 pub (crate) trait ParseShortcuts {

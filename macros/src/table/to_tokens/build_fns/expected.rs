@@ -6,10 +6,8 @@ use quote::{quote, ToTokens};
 
 use super::super::reprenstations::{MapRepr, SetRepr};
 
-pub fn expected_fn(expected: HashMap<usize, HashSet<Terminal>>) -> TokenStream {    
-
-
-    let expected: std::collections::HashMap<usize, TokenStream> = expected
+pub fn expected_fn(expected: &HashMap<usize, HashSet<Terminal>>) -> TokenStream {    
+    let expected: std::collections::HashMap<&usize, TokenStream> = expected
         .into_iter()
         .map(|(k, v)| {
             let set = SetRepr(v);

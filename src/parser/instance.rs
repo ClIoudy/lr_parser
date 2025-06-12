@@ -1,4 +1,4 @@
-use std::{any::Any, collections::HashSet, marker::PhantomData, mem::replace};
+use std::{any::Any, collections::HashSet, marker::PhantomData};
 
 use crate::Token;
 
@@ -87,7 +87,7 @@ impl<T: TableTrait> ParseInstance<T> {
 
         match token {
             Token::EOF => (),
-            Token::Value { label, value }  => {
+            Token::Value { label: _, value }  => {
                 self.debug_result_stack.push(value.clone());
 
                 self.result_stack.push(Box::new(value))

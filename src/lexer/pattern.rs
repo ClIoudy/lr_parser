@@ -1,5 +1,4 @@
 use std::hash::Hash;
-
 use regex::{Match, Regex};
 
 #[derive(Debug)]
@@ -50,3 +49,8 @@ impl TryFrom<&str> for Pattern {
     }
 }
 
+impl FromIterator<Pattern> for Pattern {
+    fn from_iter<T: IntoIterator<Item = Pattern>>(iter: T) -> Self {
+        iter.into_iter().next().unwrap()
+    }
+}

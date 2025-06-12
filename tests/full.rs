@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use lr_parser::{lexer::Lexer, Parser};
+use lr_parser::{lexer::Lexer};
 use macros::build_parser;
 
 // simple ac*d
@@ -22,9 +22,7 @@ pub fn simple() -> Result<(), Box<dyn Error>> {
 
     let lex = lexer.lex(haystack)?;
 
-    let parser = Parser::<Table>::new();
-
-    let parse = parser.parse(lex)?;
+    let parse = Parser::parse(lex)?;
 
     let res = S::A(
         Box::new("a".to_string()),
@@ -49,12 +47,10 @@ pub fn recursive_on_first_value() -> Result<(), Box<dyn Error>> {
         S: B -> "b";
     }
 
-    let mut lexer = Lexer::empty();
-    lexer.try_add("a")?;
-    lexer.try_add("b")?;
+    let lexer = Lexer::from_alphabet(Table::alphabet())?;
+    let lex = lexer.lex("baa")?;
+    let parse = Parser::parse(lex)?;
 
-    let parser = Parser::<Table>::new();
-    let parse = parser.parse(lexer.lex("baa")?)?;
     let a = Box::new("a".to_string());
     let b = Box::new("b".to_string());
     
@@ -67,17 +63,9 @@ pub fn recursive_on_first_value() -> Result<(), Box<dyn Error>> {
 }
 
 #[test]
-pub fn calculator() -> Result<(), Box<dyn Error>> {
-    
-    
-    let mut lexer = Lexer::empty();
+pub fn recursive_first_with_multiple_choices() -> Result<(), Box<dyn Error>> {
 
-    lexer.try_add("+")?;
-    lexer.try_add("-")?;
-    lexer.try_add("*")?;
-    lexer.try_add("/")?;
 
-    todo!();
 
     Ok(())
 }
