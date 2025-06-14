@@ -12,6 +12,7 @@ use crate::Token;
 #[cfg(test)]
 mod test;
 
+#[derive(Debug)]
 pub struct Lexer {
     patterns: HashSet<Pattern>,
 }

@@ -10,3 +10,6 @@ crate-type = ["lib"]
 macros = { path = "macros" }
 common = { path = "common" }
 regex = "*"
+
+[[example]]
+name = "calculator"

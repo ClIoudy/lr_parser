@@ -9,7 +9,15 @@ pub struct Pattern {
 
 impl Pattern {
     pub fn new(matcher: &str) -> Result<Self, regex::Error> {
+        // try creating regex from matcher, if invalid syntax, return error
+        Regex::new(matcher)?;
+
         let m = "^".to_string() + matcher;
+        let regex = Regex::new(&m);
+        
+        if regex.is_err() {
+            unreachable!("pattern building error. Patterns need to be compatible with preceding with '^'. This is used internally for lexing");
+        }
 
         Ok(Self {
             regex: Regex::new(&m)?,

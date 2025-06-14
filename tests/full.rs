@@ -53,9 +53,13 @@ pub fn recursive_on_first_value() -> Result<(), Box<dyn Error>> {
 pub fn recursive_first_with_multiple_choices() -> Result<(), Box<dyn Error>> {
 
     build_parser! {
-        S: A -> S, "a";
-        S: B -> S, "b";
-        S: C -> "c";
+        S: Add -> S, "\\+", Term;
+        S: Sub -> S, "-", Term;
+        S: T -> Term;
+        Term: V -> Value;
+        Term: Mul -> Term, "\\*", Value;
+        Term: Div -> Term, "/", Value;
+        Value: Num -> "[0-9]*";
     }
 
     Parser::parse("caba")?;
@@ -75,4 +79,22 @@ fn regex_test() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 
+}
+
+#[test]
+fn calculator_grammar() -> Result<(), Box<dyn Error>> {
+    build_parser! {
+        S: Add -> S, "\\+", Term;
+        S: Sub -> S, "-", Term;
+        S: T -> Term;
+        Term: V -> Value;
+        Term: Mul -> Term, "\\*", Value;
+        Term: Div -> Term, "/", Value;
+        Value: Num -> "[0-9]*";
+    }
+    
+    let expr = "1+2*3";
+    Parser::parse(expr)?;
+
+    Ok(())
 }
