@@ -19,14 +19,18 @@ mod parser;
 // pub use tests::test_quoting;
 
 
-/// rule syntax:
-/// `rule` = \<symbol>: \<name> -> \<Elements> 
+/// Creates a parsing table and parser from a given grammar. 
+/// Also creates enums for the non-terminals in the grammar, with variants being the rule "names"
+/// A grammar is just any number of rules, separated by a semicolon.
+/// <br> Rule syntax:
+/// `rule` = \<symbol>: \<name> -> \<Elements>;
 /// <br>where elements are comma seperated terminals/non-terminals
 /// <br> (`"..."` for terminal symbols and `identifiers` for non-terminals.)
 /// <br> Symbols and names are `identifiers`. From these, the enums for the resulting parse AST will be constructed. 
 /// <br> example:
 /// <br> S: A -> "a", S;
 /// <br> S: B -> "b";
+/// <br>
 #[proc_macro]
 pub fn build_parser(input: TokenStream) -> TokenStream {
     let grammar = syn::parse_macro_input!(input as Grammar);
