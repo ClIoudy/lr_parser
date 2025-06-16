@@ -1,6 +1,0 @@
-- instead of Id in common, move it here
-- just use IdTrait 
-- then construct IdTrait as an enum
-- with impl TryFrom &str for terminals
-
-- not neccessary -> information about whether a terminal is within the alphabet of the grammar or not is redundant
