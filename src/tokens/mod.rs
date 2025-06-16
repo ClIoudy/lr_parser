@@ -2,8 +2,11 @@ use std::fmt::Debug;
 
 use common::Terminal;
 
+
+/// Representation of a portion of text after lexing/tokenization.
 #[derive(Clone, PartialEq, Eq)]
 pub enum Token {
+    /// EOF = End Of File
     EOF,
     Value { label: String, value: String }
 }

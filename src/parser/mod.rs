@@ -10,7 +10,7 @@ use state_machine::StateMachine;
 
 use std::{any::Any, collections::HashSet, marker::PhantomData};
 
-pub struct ParseInstance<T: TableTrait> {
+pub(super) struct ParseInstance<T: TableTrait> {
     state_machine: StateMachine,
     result_stack: Vec<Box<dyn Any>>,
     to_parse: Vec<Token>,

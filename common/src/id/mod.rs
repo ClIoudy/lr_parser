@@ -9,7 +9,7 @@ pub use terminal::Terminal;
 use quote::{quote, ToTokens};
 use proc_macro2::TokenStream;
 
-
+/// Id used to identify terminals/non-terminals while parsing.
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Id {
     N(NonTerminal),

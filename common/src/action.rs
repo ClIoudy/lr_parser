@@ -4,6 +4,7 @@ use crate::StateId;
 use crate::VariantId;
 use quote::{ToTokens, quote};
 
+/// Representation of actions that a parser performs.
 #[derive(Clone, PartialEq, Eq)]
 pub enum Action {
     Shift(StateId),

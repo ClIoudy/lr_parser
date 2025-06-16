@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use quote::{quote, ToTokens};
 
+/// Representation of a non-terminal gramamr symbol.
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct NonTerminal {
     pub x: String,

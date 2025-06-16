@@ -1,7 +1,7 @@
 use crate::NonTerminal;
 use quote::{ToTokens, quote};
 
-
+/// An id describing a variant. Includes information like the symbol (the enum name), the name (the enum variant) and the lenght (of the enum variant tuple).
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct VariantId {
     symbol: NonTerminal,

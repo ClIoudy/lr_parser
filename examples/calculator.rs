@@ -19,18 +19,18 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     println!("Please enter a mathmatical expression.");
 
+    // read expression to parse via stdin.
     std::io::stdin().read_line(&mut expr)?;
 
-    let expr = expr.replace(" ", "");
+    // trim expression and remove whitespaces.
     let expr = expr.trim();
+    let expr = expr.replace(" ", "");
 
     println!("Parsing expression: '{}'", expr);
     
     let parse = Parser::parse(&expr)?;
 
     println!("Parsing finished: {:?}", parse);
-
-    
 
     Ok(())
 }

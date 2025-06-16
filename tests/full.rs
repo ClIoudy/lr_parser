@@ -12,7 +12,7 @@ pub fn simple() -> Result<(), Box<dyn Error>> {
     }
 
     let parse = Parser::parse("accd")?;
-
+    
     let res = S::A(
         Box::new("a".to_string()),
         Box::new(B::C(

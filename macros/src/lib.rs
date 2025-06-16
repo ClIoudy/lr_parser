@@ -23,6 +23,7 @@ mod parser;
 /// `rule` = \<symbol>: \<name> -> \<Elements> 
 /// <br>where elements are comma seperated terminals/non-terminals
 /// <br> (`"..."` for terminal symbols and `identifiers` for non-terminals.)
+/// <br> Symbols and names are `identifiers`. From these, the enums for the resulting parse AST will be constructed. 
 /// <br> example:
 /// <br> S: A -> "a", S;
 /// <br> S: B -> "b";

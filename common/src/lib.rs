@@ -4,9 +4,8 @@ pub use id::*;
 pub mod action;
 pub use action::*;
 
-pub mod grammar;
-pub use grammar::*;
+pub mod variants;
+pub use variants::*;
 
 pub mod table;
 pub use table::*;
-

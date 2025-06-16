@@ -273,5 +273,3 @@ fn extend_set_map<K: Hash + Eq + Clone, V: Hash + Eq>(map: &mut HashMap<K, HashS
         map.insert(key.clone(), x);
     }
 }
-
-// id is user-specified and lexer uses ids too instead of labels

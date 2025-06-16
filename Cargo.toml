@@ -13,3 +13,6 @@ regex = "*"
 
 [[example]]
 name = "calculator"
+
+[features]
+manual_lexing = []

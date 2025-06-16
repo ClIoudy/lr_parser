@@ -4,6 +4,7 @@ use quote::ToTokens;
 
 
 #[derive(Debug, Clone)]
+/// Represents a hashmap as a match statement.
 pub struct MapRepr<K, V, I: IntoIterator<Item = (K, V)> + Clone> {
     map: I,
     match_variable_name: TokenStream,
@@ -22,7 +23,6 @@ impl<K, V, I: IntoIterator<Item = (K, V)> + Clone> MapRepr<K, V, I> {
 
 impl<K: ToTokens, V: ToTokens, I: IntoIterator<Item = (K, V)> + Clone> ToTokens for MapRepr<K, V, I> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        // let var_name = Ident::new(&self.match_variable_name, Span::call_site());
         let var_name = &self.match_variable_name;
         let (keys, values): (Vec<_>, Vec<_>) = self.map.clone().into_iter().unzip();
         let k: Vec<_> = keys.into_iter().map(|k| quote! { #k }).collect();

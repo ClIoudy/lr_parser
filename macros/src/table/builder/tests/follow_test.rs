@@ -37,7 +37,6 @@ fn follow_test_1() -> TestRet {
 
 #[test]
 fn follow_test_2() -> TestRet {
-    // let grammar = get_grammar();
     let input = "S: A -> S, \"a\"; S: B -> \"b\"";
     let input = TokenStream::from_str(input)?;
     let grammar = syn::parse2(input)?;

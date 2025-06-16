@@ -1,9 +1,6 @@
 use syn::{parse::Parse, Token};
 use common::{Id, Variant, VariantId};
 
-// mod variant_parser;
-// use variant_parser::VariantParser;
-
 use crate::{grammar::IdParse, ParseShortcuts};
 
 pub (super) struct VariantParser(pub Variant);
@@ -30,22 +27,3 @@ impl Parse for VariantParser {
         Ok(Self(variant))
     }
 }
-
-
-// pub struct Rule {
-//     pub symbol: NonTerminal,
-//     pub variant: Variant,
-// }
-
-// impl Parse for Rule {
-//     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
-//         let symbol = input.ident()?;
-//         input.parse::<Token![:]>()?;
-//         let variant = input.parse::<VariantParser>()?.0;
-
-//         Ok(Self {
-//             symbol: NonTerminal::new(symbol.to_string()),
-//             variant,
-//         })
-//     }
-// }

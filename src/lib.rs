@@ -1,9 +1,6 @@
 mod parser;
-// pub use parser::;
-
 mod tokens;
 
-use std::fmt::{Debug, Display};
 
 pub(crate) use tokens::Token;
 
@@ -13,13 +10,14 @@ pub use macros::build_parser;
 use parser::{ParseError, ParseInstance};
 
 
+#[cfg(feature = "manual_lexing")]
+pub mod lexer;
 
+#[cfg(not(feature = "manual_lexing"))]
 mod lexer;
-use lexer::Lexer;
+
 pub use lexer::LexError;
 
-#[cfg(test)]
-mod tests;
 
 #[derive(Debug)]
 pub enum Error {
@@ -28,9 +26,9 @@ pub enum Error {
     Alphabet(regex::Error),
 }
 
-impl Display for Error {
+impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self, f)
+        std::fmt::Debug::fmt(&self, f)
     }
 }
 
@@ -55,9 +53,15 @@ impl From<regex::Error> for Error {
 }
 
 pub trait ParserTrait<T: TableTrait> {
+    /// Lexes/tokenizes the given string and then parses it.
     fn parse(to_parse: &str) -> Result<Box<T::StartSymbol>, Error> {
-        let lexer = Lexer::from_alphabet(T::alphabet())?;
+        let lexer = lexer::Lexer::from_alphabet(T::alphabet())?;
         let tokens = lexer.lex(&to_parse)?;
         Ok(ParseInstance::<T>::new(tokens)?.parse()?)
+    }
+
+    /// Parses the given tokens.
+    fn parse_tokenized(to_parse: Vec<Token>) -> Result<Box<T::StartSymbol>, Error> {
+        Ok(ParseInstance::<T>::new(to_parse)?.parse()?)
     }
 }

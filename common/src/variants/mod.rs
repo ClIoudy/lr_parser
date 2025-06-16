@@ -1,10 +1,10 @@
 use crate::{Id, NonTerminal};
 
-mod variant_id;
-pub use variant_id::VariantId;
+mod id;
+pub use id::VariantId;
 
 
-
+/// Representation of a grammar rule. The name variant refers to the values of the automatically generated enums for non-terminals in build_parser!.
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Variant {
     values: Vec<Id>,

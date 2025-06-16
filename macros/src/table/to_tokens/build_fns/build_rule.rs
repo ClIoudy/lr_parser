@@ -30,12 +30,6 @@ pub fn build_rule_fn(rules: &HashMap<NonTerminal, Vec<Variant>>) -> TokenStream 
         #repr
     }
 
-    // quote! {
-    //     todo!()
-    // }
-
-    // TokenStream::new()
-
 }
 
 fn quote_return_variant(variant_id: &VariantId) -> TokenStream {

@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use quote::{ToTokens, quote};
 
+/// Representation of a terminal grammar symbol.
 #[derive(Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Terminal {
     EOF,
