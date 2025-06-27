@@ -1,8 +1,5 @@
-# BREAKING
-- [ ] calculator example takes forever to parse?
-
 ## essential
-- [x] inline lexer 
+- [x] "inline" lexer 
 - [x] rustc overflows its stack when chaining start symbols
 - [x] alphabet (for use in lexer)
 
@@ -14,5 +11,3 @@
   - maybe in struct like syntax
   -> struct-like enum variant
 - [ ] regex-like features like * signaling Vec fields in enum
-  - lex inside parse, remove Lexer struct
-- thought: is it worth considering removing terminals afterall? and introducing an alphabet enum?
