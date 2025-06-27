@@ -9,9 +9,9 @@ pub struct ParseError {
 }
 
 impl ParseError {
-    pub fn expected(expected_keys: HashSet<Terminal>, found: &Token) -> Self {
+    pub fn expected(expected_keys: HashSet<Terminal>, found: &Token, pos: usize) -> Self {
         Self {
-            message: format!("expected one of the labels {:?} but found: {:?}", expected_keys, found)
+            message: format!("expected one of the labels {:?} but found: {:?} (at: {pos})", expected_keys, found)
         }
     }
 }

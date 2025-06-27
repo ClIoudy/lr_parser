@@ -11,6 +11,7 @@ build_parser! {
     Term: Mul -> Term, "\\*", Value;
     Term: Div -> Term, "/", Value;
     Value: Num -> "[0-9]*";
+    Value: Var -> "[a-zA-Z]"
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

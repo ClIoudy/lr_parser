@@ -30,7 +30,6 @@ mod parser;
 /// <br> example:
 /// <br> S: A -> "a", S;
 /// <br> S: B -> "b";
-/// <br>
 #[proc_macro]
 pub fn build_parser(input: TokenStream) -> TokenStream {
     let grammar = syn::parse_macro_input!(input as Grammar);

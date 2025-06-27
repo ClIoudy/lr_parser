@@ -11,6 +11,7 @@ use state_machine::StateMachine;
 use std::{any::Any, collections::HashSet, marker::PhantomData};
 
 pub(super) struct ParseInstance<T: TableTrait> {
+    current_position: usize,
     state_machine: StateMachine,
     result_stack: Vec<Box<dyn Any>>,
     to_parse: Vec<Token>,
@@ -27,6 +28,7 @@ impl<T: TableTrait> ParseInstance<T> {
         let next_id = Id::T(to_parse.last().unwrap_or(&Token::EOF).id());
 
         Ok(Self {
+            current_position: 0,
             state_machine: StateMachine::new::<T>(),
             to_parse,
             result_stack: vec![],
@@ -49,7 +51,7 @@ impl<T: TableTrait> ParseInstance<T> {
             let action = T::action(state, id);
 
             if action.is_none() {
-                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), &self.to_parse.pop().unwrap()));
+                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), &self.to_parse.pop().unwrap(), self.current_position));
             }
 
             match action.unwrap() {
@@ -77,7 +79,13 @@ impl<T: TableTrait> ParseInstance<T> {
             .to_parse
             .pop()
             .unwrap_or(Token::eof());
-        
+
+        match &res {
+            Token::EOF => (),
+            Token::Value { label: _, value } => self.current_position += value.len(),
+        };
+
+
         let next_id = self.to_parse.last().unwrap_or(&Token::EOF).id();
         self.next_id = Id::T(next_id);
 

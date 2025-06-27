@@ -1,3 +1,5 @@
+#![allow(soft_unstable)]
+
 mod parser;
 mod tokens;
 
