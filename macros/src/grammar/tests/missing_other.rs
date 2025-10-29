@@ -1,0 +1,16 @@
+// use quote::quote;
+
+// use crate::{grammar::Grammar, tests::TestRet};
+
+// #[test]
+// pub fn test() -> TestRet {
+//     let input = quote! {
+//         S: A -> "a", A;
+//     };
+
+//     let grammar = syn::parse2::<Grammar>(input);
+
+//     assert!(grammar.is_err());
+
+//     Ok(())
+// }

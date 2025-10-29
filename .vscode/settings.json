@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        ".gitattributes": true,
+        "use case.md": true,
+        "settings.json": true,
+        "parse.md": true,
+        "Cargo.lock": true,
+        ".gitignore": true,
+        "target": true
+    },
+
+    "lldb.script": { "lang.rust.toolchain": "stable-x86_64-pc-windows-gnu" }
+}
