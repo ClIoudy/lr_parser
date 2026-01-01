@@ -10,7 +10,7 @@ proc-macro = true
 syn = "*"
 quote = "*"
 common = { path = "../common" }
-pub_cfg = { path = "../../pub_cfg" }
+# pub_cfg = { path = "../../pub_cfg" }
 proc-macro2 = "*"
 
 [dev-dependencies]

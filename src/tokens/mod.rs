@@ -31,7 +31,7 @@ impl Token {
 impl Debug for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Token::EOF => f.write_str("$"),
+            Token::EOF => f.write_str("$ (EOF)"),
             Token::Value { label: _, value } => f.write_fmt(format_args!("\"{}\"", value))
         }
     }

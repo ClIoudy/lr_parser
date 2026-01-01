@@ -51,7 +51,11 @@ impl<T: TableTrait> ParseInstance<T> {
             let action = T::action(state, id);
 
             if action.is_none() {
-                return Err(ParseError::expected(T::expected(state).unwrap_or(HashSet::new()), &self.to_parse.pop().unwrap(), self.current_position));
+                return Err(ParseError::expected(
+                    T::expected(state).unwrap_or(HashSet::new()), 
+                    &self.next(), 
+                    self.current_position
+                ));
             }
 
             match action.unwrap() {
