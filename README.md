@@ -58,7 +58,7 @@ build_parser! {
     Term: V -> Value;
     Term: Mul -> Term, "\\*", Value;
     Term: Div -> Term, "/", Value;
-    Value: Num -> "[0-9]*";
+    Value: Num -> "[0-9]+";
 }
 ```
 

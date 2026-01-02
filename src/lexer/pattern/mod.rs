@@ -1,6 +1,10 @@
 use std::hash::Hash;
 use regex::{Match, Regex};
 
+mod error;
+pub use error::PatternError;
+
+
 /// Regex pattern for lexing/tokenizing. Always acts as a matcher for ONLY the start of an input.
 #[derive(Debug)]
 pub struct Pattern {
@@ -10,7 +14,7 @@ pub struct Pattern {
 
 impl Pattern {
     /// Creates a new pattern from a given regex string.
-    pub fn new(matcher: &str) -> Result<Self, regex::Error> {
+    pub fn new(matcher: &str) -> Result<Self, PatternError> {
         // try creating regex from matcher, if invalid syntax, return error
         Regex::new(matcher)?;
 
@@ -21,10 +25,13 @@ impl Pattern {
             unreachable!("pattern building error. Patterns need to be compatible with preceding with '^'. This is used internally for lexing");
         }
 
-        Ok(Self {
-            regex: Regex::new(&m)?,
-            label: matcher.to_string(),
-        })
+        let regex = regex.unwrap();
+
+        if regex.is_match("") {
+            return Err(PatternError::pattern_matches_empty_string(matcher));
+        }
+
+        Ok(Self { regex, label: matcher.to_string() })
     }
 
     /// find the longest match from the start of the haystack.
@@ -55,7 +62,7 @@ impl Eq for Pattern {
 }
 
 impl TryFrom<&str> for Pattern {
-    type Error = regex::Error;
+    type Error = PatternError;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Self::new(value)
     }

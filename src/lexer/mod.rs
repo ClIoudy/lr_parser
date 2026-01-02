@@ -1,6 +1,6 @@
 mod pattern;
 
-pub use pattern::Pattern;
+pub use pattern::{Pattern, PatternError};
 
 mod error;
 pub use error::LexError;
@@ -21,8 +21,8 @@ impl Lexer {
         }
     }
 
-    pub fn from_alphabet(alphabet: impl IntoIterator<Item = &'static str>) -> Result<Self, regex::Error> {
-        let patterns: Result<std::collections::HashSet<Pattern>, regex::Error> = alphabet
+    pub fn from_alphabet(alphabet: impl IntoIterator<Item = &'static str>) -> Result<Self, PatternError> {
+        let patterns: Result<std::collections::HashSet<Pattern>, PatternError> = alphabet
             .into_iter()
             .map(|x| Pattern::new(x))
             .collect();
